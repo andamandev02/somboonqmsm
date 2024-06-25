@@ -21,6 +21,7 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
   int _selectedIndex = 0;
   late List<Map<String, dynamic>> TicketKioskDetail = [];
   late List<Map<String, dynamic>> SearchQueue = [];
+
   bool isLoading = true;
   Timer? _timer;
 
