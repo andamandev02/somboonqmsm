@@ -73,6 +73,10 @@ String getApiBaseUrlUpdateQueue() {
   return '$apiBaseURL/api/v1/queue-mobile/update-queue';
 }
 
+String getApiBaseUrlRenderDisplay() {
+  return '$apiBaseURL/api/v1/queue-mobile/render-display';
+}
+
 final String branchListUrl = getApiBaseUrlBranchList();
 final String ticketKioskListUrl = getApiBaseUrlTicketKioskList();
 final String ticketKioskDetailUrl = getApiBaseUrlTicketKioskDetail();
@@ -82,3 +86,5 @@ final String callQueueUrl = getApiBaseUrlCallQueue();
 final String callerQueueUrl = getApiBaseUrlCallerQueue();
 final String callerQueueAllUrl = getApiBaseUrlCallerQueueAll();
 final String updateQueueUrl = getApiBaseUrlUpdateQueue();
+
+final String renderDisplay = getApiBaseUrlRenderDisplay();

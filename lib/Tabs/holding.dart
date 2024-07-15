@@ -13,6 +13,8 @@ class TabsHoldScreen extends StatefulWidget {
 }
 
 class _TabsHoldScreenState extends State<TabsHoldScreen> {
+  String? _selectedReason;
+
   String calculateTimeDifference(String queueTime) {
     DateTime now = DateTime.now();
     DateTime parsedTime = DateTime(now.year, now.month, now.day,
@@ -50,7 +52,7 @@ class _TabsHoldScreenState extends State<TabsHoldScreen> {
           return Container(
             margin: const EdgeInsets.symmetric(vertical: 5.0),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () async {},
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.black,
                 backgroundColor: Colors.white,
@@ -65,15 +67,16 @@ class _TabsHoldScreenState extends State<TabsHoldScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 5.0),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     flex: 6,
                     child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Row(
-                          children: [
-                            Text(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
                               item['queue_no'],
                               style: const TextStyle(
                                 fontSize: 20,
@@ -81,35 +84,77 @@ class _TabsHoldScreenState extends State<TabsHoldScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(width: 15),
-                            Text(
-                              '${item['number_pax']} PAX',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color.fromRGBO(9, 159, 175, 1.0),
-                                fontWeight: FontWeight.bold,
+                          ),
+                          SizedBox(width: 15),
+                          Column(
+                            children: [
+                              Text(
+                                '(จำนวน)',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            SizedBox(width: 15),
-                            Text(
-                              '${formatQueueTime(item['queue_time'])}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color.fromRGBO(9, 159, 175, 1.0),
-                                fontWeight: FontWeight.bold,
+                              Text(
+                                '${item['number_pax']} PAX',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
+                            ],
+                          ),
+                          SizedBox(width: 15),
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  '(สร้างคิว)',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  '${formatQueueTime(item['queue_time'])}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 15),
-                            Text(
-                              '${formatQueueTime(item['hold_time'])}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color.fromRGBO(9, 159, 175, 1.0),
-                                fontWeight: FontWeight.bold,
-                              ),
+                          ),
+                          SizedBox(width: 15),
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  '(พักคิว)',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  '${formatQueueTime(item['hold_time'])}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color.fromRGBO(9, 159, 175, 1.0),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        )),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   Expanded(
                     flex: 3,
@@ -119,24 +164,25 @@ class _TabsHoldScreenState extends State<TabsHoldScreen> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (BuildContext context) {
-                                  return const Dialog(
-                                    backgroundColor: Colors.transparent,
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                },
-                              );
+                              // showDialog(
+                              //   context: context,
+                              //   barrierDismissible: false,
+                              //   builder: (BuildContext context) {
+                              //     return const Dialog(
+                              //       backgroundColor: Colors.transparent,
+                              //       child: Center(
+                              //         child: CircularProgressIndicator(),
+                              //       ),
+                              //     );
+                              //   },
+                              // );
 
-                              await ClassQueue().UpdateQueue(
-                                context: context,
-                                SearchQueue: [item],
-                                StatusQueue: 'Finishing',
-                              );
+                              // await ClassQueue().UpdateQueue(
+                              //   context: context,
+                              //   SearchQueue: [item],
+                              //   StatusQueue: 'Finishing',
+                              // );
+                              _showSaveDialog(context, [item]);
                             },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
@@ -174,9 +220,15 @@ class _TabsHoldScreenState extends State<TabsHoldScreen> {
                                 },
                               );
 
-                              await ClassQueue().CallQueue(
+                              // await ClassQueue().CallQueue(
+                              //   context: context,
+                              //   SearchQueue: [item],
+                              // );
+
+                              await ClassQueue().UpdateQueue(
                                 context: context,
                                 SearchQueue: [item],
+                                StatusQueue: 'Calling',
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -207,6 +259,115 @@ class _TabsHoldScreenState extends State<TabsHoldScreen> {
         } else {
           return Container();
         }
+      },
+    );
+  }
+
+  void _showSaveDialog(
+      BuildContext context, List<Map<String, dynamic>> linkedQueue) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Center(
+            child: Text(
+              'บันทึกการสิ้นสุดรายการ',
+              style: TextStyle(
+                fontSize: 20,
+                color: Color.fromRGBO(9, 159, 175, 1.0),
+              ),
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Divider(),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return const Dialog(
+                        backgroundColor: Colors.transparent,
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    },
+                  );
+
+                  await ClassQueue().UpdateQueue(
+                    context: context,
+                    SearchQueue:
+                        linkedQueue, // Adjust this based on your map structure
+                    StatusQueue: 'Finishing',
+                  );
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: const Color.fromRGBO(9, 159, 175, 1.0),
+                ),
+                child: Center(
+                  child: Text('เข้ารับบริการเรียบร้อย'),
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return const Dialog(
+                        backgroundColor: Colors.transparent,
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    },
+                  );
+
+                  await ClassQueue().UpdateQueue(
+                    context: context,
+                    SearchQueue:
+                        linkedQueue, // Adjust this based on your map structure
+                    StatusQueue: 'Ending',
+                  );
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Color.fromARGB(255, 255, 0, 0),
+                ),
+                child: Center(
+                  child: Text('ยกเลิกรายการ'),
+                ),
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Color.fromARGB(255, 255, 0, 0),
+                    ),
+                    child: Center(
+                      child: Text('ปิด'),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        );
       },
     );
   }

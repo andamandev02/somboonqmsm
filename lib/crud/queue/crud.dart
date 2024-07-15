@@ -36,23 +36,31 @@ class ClassQueue {
 
       if (response.statusCode == 200) {
         Map<String, dynamic> _qrData = jsonDecode(response.body);
-        print(_qrData);
         Timer(Duration(seconds: 2), () {
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-          // showQRCodeDialog(
-          //   context,
-          //   _qrData,
-          // );
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            },
+          );
           showQRCodeDialog(context, _qrData);
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
         });
-
+        // print(response.body);
         // showDialog(
         //   context: context,
         //   builder: (BuildContext context) {
         //     AlertDialog alert = AlertDialog(
         //       content: Text(
-        //         responseBody['data']['queuetrans']['queue_id'].toString(),
+        //         response.body,
         //         textAlign: TextAlign.center,
         //         style: TextStyle(
         //           fontSize: screenWidth * 0.07,
@@ -72,17 +80,15 @@ class ClassQueue {
           builder: (BuildContext context) {
             AlertDialog alert = AlertDialog(
               content: Text(
-                // 'เกิดปัญหาในการสร้างคิว',
                 response.body,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: screenWidth * 0.07,
+                  fontSize: screenWidth * 0.05,
                   color: Color.fromRGBO(9, 159, 175, 1.0),
                   fontWeight: FontWeight.bold,
                 ),
               ),
             );
-
             Timer(Duration(seconds: 2), () {
               Navigator.of(context).pop();
             });
@@ -115,30 +121,48 @@ class ClassQueue {
         body: body,
       );
       if (response.statusCode == 200) {
+        Timer(Duration(seconds: 2), () {
+          Navigator.of(context).pop();
+        });
+        // showDialog(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     AlertDialog alert = AlertDialog(
+        //       content: Text(
+        //         response.body,
+        //         textAlign: TextAlign.center,
+        //         style: TextStyle(
+        //           fontSize: screenWidth * 0.02,
+        //           color: Color.fromRGBO(9, 159, 175, 1.0),
+        //           fontWeight: FontWeight.bold,
+        //         ),
+        //       ),
+        //     );
+        //     return alert;
+        //   },
+        // );
+      } else if (response.statusCode == 422) {
         showDialog(
           context: context,
           builder: (BuildContext context) {
             AlertDialog alert = AlertDialog(
               content: Text(
-                // 'บันทึกคิวสำเร็จ',
-                response.body,
+                'มีคิวที่กำลังใช้งานอยู่',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: screenWidth * 0.02,
+                  fontSize: screenWidth * 0.05,
                   color: Color.fromRGBO(9, 159, 175, 1.0),
                   fontWeight: FontWeight.bold,
                 ),
               ),
             );
-
-            // Timer(Duration(seconds: 2), () {
-            //   Navigator.of(context).pop();
-            //   Navigator.of(context).pop();
-            // });
-
             return alert;
           },
         );
+        Timer(Duration(seconds: 2), () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+        });
       } else {
         showDialog(
           context: context,
@@ -188,15 +212,49 @@ class ClassQueue {
         },
         body: body,
       );
-      print("bbbbbbb" + response.body);
       if (response.statusCode == 200) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return const Dialog(
+              backgroundColor: Colors.transparent,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          },
+        );
+        Timer(Duration(seconds: 2), () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+          // Navigator.of(context).pop();
+        });
+        // showDialog(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     AlertDialog alert = AlertDialog(
+        //       content: Text(
+        //         // 'บันทึกคิวสำเร็จ',
+        //         response.body,
+        //         textAlign: TextAlign.center,
+        //         style: TextStyle(
+        //           fontSize: screenWidth * 0.05,
+        //           color: Color.fromRGBO(9, 159, 175, 1.0),
+        //           fontWeight: FontWeight.bold,
+        //         ),
+        //       ),
+        //     );
+        //     return alert;
+        //   },
+        // );
+      } else if (response.statusCode == 422) {
         showDialog(
           context: context,
           builder: (BuildContext context) {
             AlertDialog alert = AlertDialog(
               content: Text(
-                // 'บันทึกคิวสำเร็จ',
-                response.body,
+                'มีคิวที่กำลังใช้งานอยู่',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: screenWidth * 0.05,
@@ -208,6 +266,10 @@ class ClassQueue {
             return alert;
           },
         );
+        Timer(Duration(seconds: 2), () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+        });
       } else {
         showDialog(
           context: context,
@@ -295,6 +357,8 @@ class ClassQueue {
     required Map<String, dynamic> Kiosk,
     required Function(List<Map<String, dynamic>>) onCallerLoaded,
   }) async {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     try {
       var body = jsonEncode({
         'TicketKioskDetail': TicketKioskDetail,
@@ -312,6 +376,43 @@ class ClassQueue {
       );
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.body);
+        Timer(Duration(seconds: 2), () {
+          Navigator.of(context).pop();
+        });
+        // var bodyrender = jsonEncode({
+        //   'RenderDisplay': response.body,
+        // });
+
+        // final responserender = await http.post(
+        //   Uri.parse(renderDisplay),
+        //   headers: <String, String>{
+        //     HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
+        //   },
+        //   body: bodyrender,
+        // );
+
+        // if (responserender.statusCode == 200) {
+        // print(responserender.body);
+
+        // showDialog(
+        //   context: context,
+        //   builder: (BuildContext context) {
+        //     AlertDialog alert = AlertDialog(
+        //       content: Text(
+        //         // 'บันทึกคิวสำเร็จ',
+        //         response.body,
+        //         textAlign: TextAlign.center,
+        //         style: TextStyle(
+        //           fontSize: 5,
+        //           color: Color.fromRGBO(9, 159, 175, 1.0),
+        //           fontWeight: FontWeight.bold,
+        //         ),
+        //       ),
+        //     );
+        //     return alert;
+        //   },
+        // );
+
         if (jsonData.containsKey('data') &&
             jsonData['data'] is Map<String, dynamic>) {
           Map<String, dynamic> data = jsonData['data'];
@@ -324,6 +425,29 @@ class ClassQueue {
         } else {
           onCallerLoaded([]);
         }
+        // }
+      } else if (response.statusCode == 422) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            AlertDialog alert = AlertDialog(
+              content: Text(
+                'มีคิวที่กำลังใช้งานอยู่',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.05,
+                  color: Color.fromRGBO(9, 159, 175, 1.0),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+            return alert;
+          },
+        );
+        Timer(Duration(seconds: 2), () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+        });
       } else {
         showDialog(
           context: context,
@@ -333,7 +457,7 @@ class ClassQueue {
                 response.body,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: screenWidth * 0.05,
                   color: Color.fromRGBO(9, 159, 175, 1.0),
                   fontWeight: FontWeight.bold,
                 ),
@@ -365,6 +489,8 @@ class ClassQueue {
           HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
         },
       );
+      print('${response.body}');
+
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.body);
         if (jsonData.containsKey('data') && jsonData['data'] is List) {

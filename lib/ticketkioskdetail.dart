@@ -139,7 +139,8 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
                     TabsCallingScreen(
                         Branch: widget.Branch,
                         Kiosk: widget.Kiosk,
-                        TicketKioskDetail: TicketKioskDetail),
+                        TicketKioskDetail: TicketKioskDetail,
+                        SearchQueue: SearchQueue),
                     TabsWaitingScreen(
                       SearchQueue: SearchQueue,
                     ),

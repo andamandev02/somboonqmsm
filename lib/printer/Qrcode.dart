@@ -45,12 +45,12 @@ Future<Uint8List> createQrImage(String data, double size) async {
 Future<Uint8List> _createPdfWithText(Map<String, dynamic> _qrData) async {
   final pdf = pw.Document();
 
-  // โหลดโลโก้
+  // Load logo
   final Uint8List logoBytes = await rootBundle
-      .load('assets/logo/logoprint.png')
+      .load('assets/icon/icon.png')
       .then((data) => data.buffer.asUint8List());
 
-  // สร้าง QR code image
+  // Create QR code image
   String qrDataUrl =
       'https://somboonqms.andamandev.com/en/app/kiosk/scan-queue?id=';
   final Uint8List qrBytes = await createQrImage(
@@ -58,58 +58,69 @@ Future<Uint8List> _createPdfWithText(Map<String, dynamic> _qrData) async {
   final pdfLogoImage = pw.MemoryImage(logoBytes);
   final pdfQrImage = pw.MemoryImage(qrBytes);
 
+  final fontDataChinese =
+      await rootBundle.load('assets/fonts/NotoSansSC-Regular.ttf');
+  final fontChinese = pw.Font.ttf(fontDataChinese.buffer.asByteData());
+
   pdf.addPage(
     pw.Page(
-      pageFormat: PdfPageFormat.standard,
+      pageFormat: PdfPageFormat.roll80,
       build: (pw.Context context) {
         return pw.Center(
           child: pw.Column(
             mainAxisAlignment: pw.MainAxisAlignment.center,
             crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
-              pw.Image(pdfLogoImage,
-                  width: 80, height: 80), // เพิ่มขนาดของโลโก้
-              pw.SizedBox(height: 10), // เพิ่มขนาดของช่องว่าง
+              pw.Image(pdfLogoImage, width: 80, height: 80),
+              pw.SizedBox(height: 5),
               pw.Text(
                 'Branch: ${_qrData['data']['branch']['branch_name']}',
-                style: pw.TextStyle(fontSize: 14.0), // เพิ่มขนาดฟอนต์
+                style: pw.TextStyle(fontSize: 10.0),
               ),
-              pw.SizedBox(height: 10), // เพิ่มขนาดของช่องว่าง
+              pw.SizedBox(height: 5),
               pw.Text(
                 'Queue No: ${_qrData['data']['queue']['queue_no']}',
                 style: pw.TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: pw.FontWeight.bold), // เพิ่มขนาดฟอนต์
+                    fontSize: 12.0, fontWeight: pw.FontWeight.bold),
               ),
-              pw.SizedBox(height: 10), // เพิ่มขนาดของช่องว่าง
+              pw.SizedBox(height: 5),
               pw.Text(
                 '${_qrData['data']['queue']['number_pax']} PAX',
-                style: pw.TextStyle(fontSize: 14.0), // เพิ่มขนาดฟอนต์
+                style: pw.TextStyle(fontSize: 10.0),
               ),
-              pw.SizedBox(height: 10), // เพิ่มขนาดของช่องว่าง
+              pw.SizedBox(height: 5),
               pw.Text(
                 '${_qrData['data']['queue']['queue_time']}',
-                style: pw.TextStyle(fontSize: 13.0), // เพิ่มขนาดฟอนต์
+                style: pw.TextStyle(fontSize: 9.0),
               ),
-              pw.SizedBox(height: 10), // เพิ่มขนาดของช่องว่าง
+              pw.SizedBox(height: 5),
               pw.Text(
                 'If your number has passed, Please get a new ticket.',
-                style: pw.TextStyle(fontSize: 8.0), // เพิ่มขนาดฟอนต์
+                style: pw.TextStyle(fontSize: 6.0),
               ),
-              pw.SizedBox(height: 10), // เพิ่มขนาดของช่องว่าง
-              pw.Image(pdfQrImage,
-                  width: 80, height: 80), // เพิ่มขนาดของ QR code
-              pw.SizedBox(height: 10), // เพิ่มขนาดของช่องว่าง
+              pw.SizedBox(height: 5),
+              pw.Image(pdfQrImage, width: 80, height: 80),
+              pw.SizedBox(height: 5),
+              pw.Text(
+                'Everyone must be here to be seated.',
+                style: pw.TextStyle(fontSize: 10.0),
+              ),
+              pw.SizedBox(height: 2),
+              pw.Text(
+                '所有人都需要到场才能入座',
+                style: pw.TextStyle(fontSize: 10.0, font: fontChinese),
+              ),
+              pw.SizedBox(height: 10),
               pw.Text(
                 'Scan to see the current number.',
-                style: pw.TextStyle(fontSize: 14.0), // เพิ่มขนาดฟอนต์
+                style: pw.TextStyle(fontSize: 10.0),
               ),
-              pw.SizedBox(height: 10), // เพิ่มขนาดของช่องว่าง
+              pw.SizedBox(height: 5),
               pw.Text(
-                'Wait 10 Queue',
-                style: pw.TextStyle(fontSize: 10.0), // เพิ่มขนาดฟอนต์
+                'Wait  Queue',
+                style: pw.TextStyle(fontSize: 8.0),
               ),
-              pw.SizedBox(height: 20), // เพิ่มขนาดของช่องว่าง
+              pw.SizedBox(height: 50),
             ],
           ),
         );

@@ -1,40 +1,74 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import 'package:somboonqms/crud/queue/crud.dart';
-import 'package:somboonqms/printer/Qrcode.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class TabsCallingScreen extends StatefulWidget {
+  // ignore: non_constant_identifier_names
   final Map<String, dynamic> Kiosk;
+  // ignore: non_constant_identifier_names
   final Map<String, dynamic> Branch;
+  // ignore: non_constant_identifier_names
   final List<Map<String, dynamic>> TicketKioskDetail;
-  const TabsCallingScreen(
-      {super.key,
-      required this.Branch,
-      required this.Kiosk,
-      required this.TicketKioskDetail});
+  final List<Map<String, dynamic>> SearchQueue;
+  const TabsCallingScreen({
+    super.key,
+    // ignore: non_constant_identifier_names
+    required this.Branch,
+    // ignore: non_constant_identifier_names
+    required this.Kiosk,
+    // ignore: non_constant_identifier_names
+    required this.TicketKioskDetail,
+    // ignore: non_constant_identifier_names
+    required this.SearchQueue,
+  });
 
   @override
   State<TabsCallingScreen> createState() => _TabsCallingScreenState();
 }
 
 class _TabsCallingScreenState extends State<TabsCallingScreen> {
+  late IO.Socket socket;
   final TextEditingController _textPaxontroller = TextEditingController();
+  // ignore: non_constant_identifier_names
   late List<Map<String, dynamic>> CallerList = [];
+  // ignore: non_constant_identifier_names
   late List<Map<String, dynamic>> QueueAll = [];
+  final List<String> _dropdownItems = ['Item 1', 'Item 2', 'Item 3'];
+  // ignore: unused_field
+  String? _selectedValue;
   Timer? _timer;
+  // ignore: unused_field
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    connectToSocket();
     // รันรายการ caller
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       fetchCallerQueueAll(widget.Branch['branch_id']);
+    });
+  }
+
+  void connectToSocket() {
+    socket = IO.io(
+        'https://somboonqms.andamandev.com/nodesomboonqms/', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+    });
+    socket.connect();
+    socket.on('connect', (_) {
+      print('Connected to the server');
+    });
+    socket.on('disconnect', (_) {
+      print('Disconnected from the server');
+    });
+    socket.on('recall_response', (data) {
+      print('Recall Response: $data');
     });
   }
 
@@ -70,12 +104,17 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    socket.dispose();
     _textPaxontroller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final Size screenSize = MediaQuery.of(context).size;
+    final double baseFontSize = screenSize.height * 0.065;
+    final double fontSize = baseFontSize * 11.5;
+    final double letterSpacing = screenSize.width * 0.05;
     return Scaffold(
       backgroundColor: const Color.fromRGBO(9, 159, 175, 1.0),
       body: SafeArea(
@@ -757,11 +796,19 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                       ),
                                     ),
                                     Text(
-                                      '${QueueAll.length}',
+                                      // // widget.SearchQueue.queue_id ==
+                                      // //         widget.TicketKioskDetail[index]
+                                      // //             ['queue_id']
+                                      // //     ? 'yes'
+                                      // //     : 'no',
+                                      // widget.SearchQueue['queue_id'].toString(),
+                                      '${queue['queue_count']}',
                                       style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18.0,
-                                          fontWeight: FontWeight.bold),
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     // Text(
                                     //   '${calculateTimeDifference(QueueAll[index]['queue_time'])}',
@@ -890,6 +937,7 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                             SearchQueue: linkedQueue,
                                             StatusQueue: 'Holding',
                                           );
+                                          // Navigator.of(context).pop();
                                         },
                                         style: ElevatedButton.styleFrom(
                                           foregroundColor: Colors.white,
@@ -920,38 +968,18 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                         width: 5.0), // เพิ่มช่องว่างระหว่างปุ่ม
                                     Expanded(
                                       child: ElevatedButton(
-                                        onPressed: () async {
-                                          showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (BuildContext context) {
-                                              return const Dialog(
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                                child: Center(
-                                                  child:
-                                                      CircularProgressIndicator(),
-                                                ),
-                                              );
-                                            },
-                                          );
-
-                                          await ClassQueue().UpdateQueue(
-                                            context: context,
-                                            SearchQueue: linkedQueue,
-                                            StatusQueue: 'Finishing',
-                                          );
+                                        onPressed: () {
+                                          _showSaveDialog(context, linkedQueue);
                                         },
                                         style: ElevatedButton.styleFrom(
                                           foregroundColor: Colors.white,
-                                          backgroundColor: Color.fromARGB(255,
-                                              255, 0, 0), // สีข้อความของปุ่ม
+                                          backgroundColor:
+                                              Color.fromARGB(255, 255, 0, 0),
                                           padding: const EdgeInsets.symmetric(
-                                              vertical:
-                                                  10.0), // ลด padding เพื่อปรับความสูงของปุ่ม
+                                              vertical: 10.0),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                10.0), // ความโค้งมนของปุ่ม
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
                                           ),
                                         ),
                                         child: const Text(
@@ -983,19 +1011,9 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                             },
                                           );
 
-                                          await ClassQueue().CallerQueue(
-                                            context: context,
-                                            TicketKioskDetail:
-                                                widget.TicketKioskDetail[index],
-                                            Branch: widget.Branch,
-                                            Kiosk: widget.Kiosk,
-                                            onCallerLoaded:
-                                                (loadedSearchQueue) {
-                                              setState(() {
-                                                CallerList = loadedSearchQueue;
-                                              });
-                                            },
-                                          );
+                                          socket.emit('recall', {
+                                            'message': 'Recall button clicked'
+                                          });
                                         },
                                         style: ElevatedButton.styleFrom(
                                           foregroundColor: Colors.white,
@@ -1045,10 +1063,120 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
     );
   }
 
+  void _showSaveDialog(
+      BuildContext context, List<Map<String, dynamic>> linkedQueue) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Center(
+            child: Text(
+              'บันทึกการสิ้นสุดรายการ',
+              style: TextStyle(
+                fontSize: 20,
+                color: Color.fromRGBO(9, 159, 175, 1.0),
+              ),
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Divider(),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return const Dialog(
+                        backgroundColor: Colors.transparent,
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    },
+                  );
+
+                  await ClassQueue().UpdateQueue(
+                    context: context,
+                    SearchQueue:
+                        linkedQueue, // Adjust this based on your map structure
+                    StatusQueue: 'Finishing',
+                  );
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: const Color.fromRGBO(9, 159, 175, 1.0),
+                ),
+                child: Center(
+                  child: Text('เข้ารับบริการเรียบร้อย'),
+                ),
+              ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return const Dialog(
+                        backgroundColor: Colors.transparent,
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    },
+                  );
+
+                  await ClassQueue().UpdateQueue(
+                    context: context,
+                    SearchQueue:
+                        linkedQueue, // Adjust this based on your map structure
+                    StatusQueue: 'Ending',
+                  );
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Color.fromARGB(255, 255, 0, 0),
+                ),
+                child: Center(
+                  child: Text('ยกเลิกรายการ'),
+                ),
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Color.fromARGB(255, 255, 0, 0),
+                    ),
+                    child: Center(
+                      child: Text('ปิด'),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _showNumpadDialog(
       BuildContext context, Map<String, dynamic> TicketKioskDetail) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         double screenWidth = MediaQuery.of(context).size.width;
         double screenHeight = MediaQuery.of(context).size.height;
@@ -1063,253 +1191,258 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
         return Dialog(
           child: Padding(
             padding: EdgeInsets.all(paddingValue),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: Text(
-                    'Service ${TicketKioskDetail['service_group_name']} Seats',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Color.fromRGBO(9, 159, 175, 1.0),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                SizedBox(height: paddingValue * 0.1),
-                Row(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      "ระบุ",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(9, 159, 175, 1.0),
+                    Center(
+                      child: Text(
+                        'Service ${TicketKioskDetail['service_group_name']} Seats',
+                        style: TextStyle(
+                          fontSize: fontSize * 0.65,
+                          color: Color.fromRGBO(9, 159, 175, 1.0),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    SizedBox(width: paddingValue),
-                    Expanded(
-                      child: Container(
-                        height: textFieldHeight,
-                        padding: EdgeInsets.symmetric(
-                            horizontal: paddingValue * 0.1),
-                        child: TextField(
-                          controller: _textPaxController,
-                          readOnly: true,
-                          textAlign: TextAlign.end,
-                          decoration: InputDecoration(
-                            hintText: '',
-                            hintStyle: TextStyle(
-                              color: Color.fromRGBO(9, 159, 175, 1.0),
-                              fontSize: fontSize * 0.35,
-                            ),
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: paddingValue * 0.1),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(paddingValue * 2),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color.fromRGBO(9, 159, 175, 1.0),
-                              ),
-                              borderRadius:
-                                  BorderRadius.circular(paddingValue * 2),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(
-                                color: Color.fromRGBO(9, 159, 175, 1.0),
-                              ),
-                              borderRadius:
-                                  BorderRadius.circular(paddingValue * 2),
-                            ),
-                          ),
+                    SizedBox(height: paddingValue * 1.0),
+                    Row(
+                      children: [
+                        Text(
+                          "ระบุ",
                           style: TextStyle(
+                            fontSize: fontSize * 0.5,
                             color: Color.fromRGBO(9, 159, 175, 1.0),
-                            fontSize: fontSize * 0.35,
-                          ),
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(3)
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: paddingValue),
-                    Text(
-                      "คน",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color.fromRGBO(9, 159, 175, 1.0),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: paddingValue * 0.5),
-                Expanded(
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      mainAxisSpacing: paddingValue * 0.5,
-                      crossAxisSpacing: paddingValue * 0.5,
-                    ),
-                    itemCount: 12,
-                    itemBuilder: (BuildContext context, int index) {
-                      String buttonText;
-                      Color buttonColor;
-                      if (index < 9) {
-                        buttonText = '${index + 1}';
-                        buttonColor = Color.fromRGBO(9, 159, 175, 1.0);
-                      } else if (index == 9) {
-                        buttonText = '';
-                        buttonColor = Colors.transparent;
-                      } else if (index == 10) {
-                        buttonText = '0';
-                        buttonColor = Color.fromRGBO(9, 159, 175, 1.0);
-                      } else {
-                        buttonText = '←';
-                        buttonColor = Color.fromRGBO(9, 159, 175, 1.0);
-                      }
-                      return ElevatedButton(
-                        onPressed: () {
-                          if (buttonText == '←') {
-                            if (_textPaxController.text.isNotEmpty) {
-                              _textPaxController.text = _textPaxController.text
-                                  .substring(
-                                      0, _textPaxController.text.length - 1);
-                            }
-                          } else if (buttonText.isNotEmpty) {
-                            _textPaxController.text += buttonText;
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(buttonSize, buttonSize),
-                          padding: EdgeInsets.all(paddingValue * 0.5),
-                          backgroundColor: buttonColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(paddingValue),
                           ),
                         ),
-                        child: buttonText.isEmpty
-                            ? SizedBox.shrink()
-                            : Text(
-                                buttonText,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: buttonText == '←'
-                                      ? fontSize * 0.75
-                                      : fontSize,
+                        SizedBox(width: paddingValue),
+                        Expanded(
+                          child: Container(
+                            height: textFieldHeight,
+                            padding: EdgeInsets.symmetric(
+                                horizontal: paddingValue * 0.1),
+                            child: TextField(
+                              controller: _textPaxController,
+                              readOnly: true,
+                              textAlign: TextAlign.center,
+                              decoration: InputDecoration(
+                                hintText: '',
+                                hintStyle: TextStyle(
+                                  color: Color.fromRGBO(9, 159, 175, 1.0),
+                                  fontSize: fontSize * 0.3,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                    vertical: paddingValue * 0.1),
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(paddingValue * 2),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Color.fromRGBO(9, 159, 175, 1.0),
+                                  ),
+                                  borderRadius:
+                                      BorderRadius.circular(paddingValue * 2),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Color.fromRGBO(9, 159, 175, 1.0),
+                                  ),
+                                  borderRadius:
+                                      BorderRadius.circular(paddingValue * 2),
                                 ),
                               ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: paddingValue),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Navigator.of(context).pop();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Color.fromRGBO(255, 0, 0, 1),
-                          padding: EdgeInsets.symmetric(vertical: 20.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
+                              style: TextStyle(
+                                  color: Color.fromRGBO(9, 159, 175, 1.0),
+                                  fontSize: fontSize * 0.5),
+                              inputFormatters: [
+                                LengthLimitingTextInputFormatter(3)
+                              ],
+                            ),
                           ),
                         ),
-                        child: Text(
-                          'ยกเลิก',
+                        SizedBox(width: paddingValue),
+                        Text(
+                          "คน",
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15.0,
+                            fontSize: fontSize * 0.5,
+                            color: Color.fromRGBO(9, 159, 175, 1.0),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                    SizedBox(width: 5.0),
+                    SizedBox(height: paddingValue * 1.0),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (_textPaxController.text.isEmpty ||
-                              TicketKioskDetail.isEmpty) {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                AlertDialog alert = AlertDialog(
-                                  content: Text(
-                                    'ป้อนจำนวนคน',
-                                    textAlign: TextAlign.center,
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          mainAxisSpacing: paddingValue * 0.5,
+                          crossAxisSpacing: paddingValue * 0.5,
+                        ),
+                        itemCount: 12,
+                        itemBuilder: (BuildContext context, int index) {
+                          String buttonText;
+                          Color buttonColor;
+                          if (index < 9) {
+                            buttonText = '${index + 1}';
+                            buttonColor = Color.fromRGBO(9, 159, 175, 1.0);
+                          } else if (index == 9) {
+                            buttonText = '';
+                            buttonColor = Colors.transparent;
+                          } else if (index == 10) {
+                            buttonText = '0';
+                            buttonColor = Color.fromRGBO(9, 159, 175, 1.0);
+                          } else {
+                            buttonText = '←';
+                            buttonColor = Color.fromRGBO(9, 159, 175, 1.0);
+                          }
+                          return ElevatedButton(
+                            onPressed: () {
+                              if (buttonText == '←') {
+                                if (_textPaxController.text.isNotEmpty) {
+                                  _textPaxController.text =
+                                      _textPaxController.text.substring(0,
+                                          _textPaxController.text.length - 1);
+                                }
+                              } else if (buttonText.isNotEmpty) {
+                                _textPaxController.text += buttonText;
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(buttonSize, buttonSize),
+                              padding: EdgeInsets.all(paddingValue * 1.0),
+                              backgroundColor: buttonColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(paddingValue),
+                              ),
+                            ),
+                            child: buttonText.isEmpty
+                                ? SizedBox.shrink()
+                                : Text(
+                                    buttonText,
                                     style: TextStyle(
-                                      fontSize: screenWidth * 0.07,
-                                      color: Color.fromRGBO(9, 159, 175, 1.0),
-                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize: buttonText == '←'
+                                          ? fontSize * 0.75
+                                          : fontSize,
                                     ),
                                   ),
-                                );
-                                Timer(Duration(seconds: 2), () {
-                                  Navigator.of(context).pop();
-                                });
-                                return alert;
-                              },
-                            );
-                          } else {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext context) {
-                                return Dialog(
-                                  backgroundColor: Colors.transparent,
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-                              },
-                            );
-
-                            await ClassQueue().createQueue(
-                              context: context,
-                              Pax: _textPaxController.text,
-                              TicketKioskDetail: TicketKioskDetail,
-                              Branch: widget.Branch,
-                              Kiosk: widget.Kiosk,
-                            );
-
-                            Timer(Duration(seconds: 1), () async {
-                              _textPaxController.text = '';
-                              setState(() {
-                                _isLoading = true;
-                              });
-                              await Future.delayed(Duration(seconds: 1));
-                              setState(() {
-                                _isLoading = false;
-                              });
-                            });
-                          }
+                          );
                         },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor: Color.fromRGBO(9, 159, 175, 1.0),
-                          padding: EdgeInsets.symmetric(vertical: 20.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                        ),
-                        child: Text(
-                          'บันทึกรายการ',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15.0,
-                          ),
-                        ),
                       ),
                     ),
+                    SizedBox(height: paddingValue),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Color.fromRGBO(255, 0, 0, 1),
+                              padding: EdgeInsets.symmetric(vertical: 20.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                            child: Text(
+                              'ยกเลิก',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 5.0),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              if (_textPaxController.text.isEmpty ||
+                                  TicketKioskDetail.isEmpty) {
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    AlertDialog alert = AlertDialog(
+                                      content: Text(
+                                        'ป้อนจำนวนคน',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: screenWidth * 0.07,
+                                          color:
+                                              Color.fromRGBO(9, 159, 175, 1.0),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    );
+                                    Timer(Duration(seconds: 2), () {
+                                      Navigator.of(context).pop();
+                                    });
+                                    return alert;
+                                  },
+                                );
+                              } else {
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (BuildContext context) {
+                                    return Dialog(
+                                      backgroundColor: Colors.transparent,
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    );
+                                  },
+                                );
+
+                                await ClassQueue().createQueue(
+                                  context: context,
+                                  Pax: _textPaxController.text,
+                                  TicketKioskDetail: TicketKioskDetail,
+                                  Branch: widget.Branch,
+                                  Kiosk: widget.Kiosk,
+                                );
+
+                                Timer(Duration(seconds: 1), () async {
+                                  _textPaxController.text = '';
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+                                  await Future.delayed(Duration(seconds: 1));
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+                                });
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Color.fromRGBO(9, 159, 175, 1.0),
+                              padding: EdgeInsets.symmetric(vertical: 20.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                            child: Text(
+                              'บันทึกรายการ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                ),
-              ],
+                );
+              },
             ),
           ),
         );

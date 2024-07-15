@@ -18,6 +18,7 @@ class TabsWaitingScreen extends StatefulWidget {
 }
 
 class _TabsWaitingScreenState extends State<TabsWaitingScreen> {
+  String? _selectedReason;
   String formatQueueTime(String queueTime) {
     try {
       List<String> parts = queueTime.split(':');
@@ -82,7 +83,7 @@ class _TabsWaitingScreenState extends State<TabsWaitingScreen> {
                   Expanded(
                     flex: 5,
                     child: Padding(
-                      padding: const EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: Row(
                         children: [
                           Expanded(
@@ -97,24 +98,46 @@ class _TabsWaitingScreenState extends State<TabsWaitingScreen> {
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
-                              '${item['number_pax']} PAX',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color.fromRGBO(9, 159, 175, 1.0),
-                                fontWeight: FontWeight.bold,
+                            child: Column(children: [
+                              Text(
+                                '(จำนวน)',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
+                              Text(
+                                '${item['number_pax']} PAX',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ]),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
-                              '${formatQueueTime(item['queue_time'])}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color.fromRGBO(9, 159, 175, 1.0),
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  '(สร้างคิว)',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  '${formatQueueTime(item['queue_time'])}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -129,24 +152,26 @@ class _TabsWaitingScreenState extends State<TabsWaitingScreen> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (BuildContext context) {
-                                  return const Dialog(
-                                    backgroundColor: Colors.transparent,
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                },
-                              );
+                              // showDialog(
+                              //   context: context,
+                              //   barrierDismissible: false,
+                              //   builder: (BuildContext context) {
+                              //     return const Dialog(
+                              //       backgroundColor: Colors.transparent,
+                              //       child: Center(
+                              //         child: CircularProgressIndicator(),
+                              //       ),
+                              //     );
+                              //   },
+                              // );
 
-                              await ClassQueue().UpdateQueue(
-                                context: context,
-                                SearchQueue: [item],
-                                StatusQueue: 'Finishing',
-                              );
+                              // await ClassQueue().UpdateQueue(
+                              //   context: context,
+                              //   SearchQueue: [item],
+                              //   StatusQueue: 'Finishing',
+                              // );
+
+                              _showSaveDialog(context, [item]);
                             },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
@@ -217,6 +242,140 @@ class _TabsWaitingScreenState extends State<TabsWaitingScreen> {
         } else {
           return Container();
         }
+      },
+    );
+  }
+
+  void _showSaveDialog(
+      BuildContext context, List<Map<String, dynamic>> linkedQueue) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Center(
+            child: Text(
+              'บันทึกการสิ้นสุดรายการ',
+              style: TextStyle(
+                fontSize: 20,
+                color: Color.fromRGBO(9, 159, 175, 1.0),
+              ),
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Divider(),
+              SizedBox(height: 10),
+              // ElevatedButton(
+              //   onPressed: () async {
+              //     showDialog(
+              //       context: context,
+              //       barrierDismissible: false,
+              //       builder: (BuildContext context) {
+              //         return const Dialog(
+              //           backgroundColor: Colors.transparent,
+              //           child: Center(
+              //             child: CircularProgressIndicator(),
+              //           ),
+              //         );
+              //       },
+              //     );
+
+              //     await ClassQueue().UpdateQueue(
+              //       context: context,
+              //       SearchQueue:
+              //           linkedQueue, // Adjust this based on your map structure
+              //       StatusQueue: 'Finishing',
+              //     );
+              //     Navigator.of(context).pop();
+              //     showDialog(
+              //       context: context,
+              //       barrierDismissible: false,
+              //       builder: (BuildContext context) {
+              //         return const Dialog(
+              //           backgroundColor: Colors.transparent,
+              //           child: Center(
+              //             child: CircularProgressIndicator(),
+              //           ),
+              //         );
+              //       },
+              //     );
+              //     Navigator.of(context).pop();
+              //   },
+              //   style: ElevatedButton.styleFrom(
+              //     foregroundColor: Colors.white,
+              //     backgroundColor: const Color.fromRGBO(9, 159, 175, 1.0),
+              //   ),
+              //   child: Center(
+              //     child: Text('เข้ารับบริการเรียบร้อย'),
+              //   ),
+              // ),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return const Dialog(
+                        backgroundColor: Colors.transparent,
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    },
+                  );
+
+                  await ClassQueue().UpdateQueue(
+                    context: context,
+                    SearchQueue: linkedQueue,
+                    StatusQueue: 'Ending',
+                  );
+                  Navigator.of(context).pop();
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return const Dialog(
+                        backgroundColor: Colors.transparent,
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    },
+                  );
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Color.fromARGB(255, 255, 0, 0),
+                ),
+                child: Center(
+                  child: Text('ยกเลิกรายการ'),
+                ),
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Color.fromARGB(255, 255, 0, 0),
+                    ),
+                    child: Center(
+                      child: Text('ปิด'),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        );
       },
     );
   }

@@ -13,7 +13,8 @@ class ClassBranch {
     try {
       final response = await http.get(
         // Uri.parse(branchListUrl),
-        Uri.parse('https://somboonqms.andamandev.com/api/v1/queue-mobile/branch-list'),
+        Uri.parse(
+            'https://somboonqms.andamandev.com/api/v1/queue-mobile/branch-list'),
         headers: <String, String>{
           HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
         },
@@ -21,13 +22,11 @@ class ClassBranch {
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.body);
-        print("aaaaaaaaaaaaaaaaaaaaaaaaa");
-        print(jsonData);
         List<Map<String, dynamic>> branchList = (jsonData['data'] as List)
             .map((item) => item as Map<String, dynamic>)
             .toList();
         onBranchListLoaded(branchList);
-      }else {
+      } else {
         print('Response body: ${response.body}');
         showDialog(
           context: context,
@@ -37,7 +36,7 @@ class ClassBranch {
                 'เกิดปัญหาในการสร้างคิว',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize:  0.07,
+                  fontSize: 0.07,
                   color: Color.fromRGBO(9, 159, 175, 1.0),
                   fontWeight: FontWeight.bold,
                 ),
