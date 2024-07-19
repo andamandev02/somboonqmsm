@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -10,6 +12,39 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 class SocketService {
   IO.Socket? socket;
   String connectionStatus = "Disconnected";
+  String PCSC_INITIAL = "PCSC_INITIAL";
+  String PCSC_CLOSE = "PCSC_CLOSE";
+
+  String DEVICE_WAITING = "DEVICE_WAITING";
+  String DEVICE_CONNECTED = "DEVICE_CONNECTED";
+  String DEVICE_ERROR = "DEVICE_ERROR";
+  String DEVICE_DISCONNECTED = "DEVICE_DISCONNECTED";
+
+  String CARD_INSERTED = "CARD_INSERTED";
+  String CARD_REMOVED = "CARD_REMOVED";
+
+  String READING_INIT = "READING_INIT";
+  String READING_START = "READING_START";
+  String READING_PROGRESS = "READING_PROGRESS";
+  String READING_COMPLETE = "READING_COMPLETE";
+  String READING_FAIL = "READING_FAIL";
+  String REGISTER = "queue:register";
+  String CALL = "queue:call";
+  String HOLD = "queue:hold";
+  String FINISH = "queue:finish";
+  String START = "queue:start";
+  String TRANSFER = "queue:transfer";
+
+  String SETTING_DISPLAY = "setting:display";
+  String SETTING_COUNTER = "setting:counter";
+  String SETTING_BRANCH_SERVICE = "setting:branch-service";
+  String SETTING_SERVICE = "setting:service";
+  String SETTING_KIOSK = "setting:kiosk";
+  String CHECK_FOR_UPDATE = "check-for-update";
+
+  String DISPLAY_PLAYING = "display:playing";
+  String DISPLAY_ENDED = "display:ended";
+  String DISPLAY_UPDATE_STATUS = "display:update-status";
 
   Future<void> connectSocket({
     required BuildContext context,
@@ -32,7 +67,8 @@ class SocketService {
       socket?.onConnect((_) {
         print('Connection established');
         connectionStatus = "Connected";
-        _emitRecallData(callerData);
+        socket?.emit(
+            CALL, <String, dynamic>{'queue': 'call', 'data': callerData});
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -54,11 +90,6 @@ class SocketService {
         Navigator.of(context).pop();
       });
 
-      socket?.onDisconnect((_) {
-        print('Connection Disconnected');
-        connectionStatus = "Disconnected";
-      });
-
       socket?.onConnectError((err) {
         print('Connect Error: $err');
         connectionStatus = "Connection Error: $err";
@@ -77,8 +108,14 @@ class SocketService {
 
   void _emitRecallData(List<Map<String, dynamic>> data) {
     if (socket != null && data.isNotEmpty) {
-      print('emit: socket is not null or data is not empty.');
-      socket?.emit('call', <String, dynamic>{'queue': 'call', 'data': data});
+      // print('emit: socket is not null or data is not empty.');
+      print("recall");
+      socket?.emit(CALL, <String, dynamic>{'queue': 'call', 'data': data});
+      socket?.onDisconnect((_) {
+        print('Connection Disconnected');
+        connectionStatus = "Disconnected";
+      });
+      socket?.onError((err) => print(err));
     } else {
       print('Failed to emit: socket is null or data is empty.');
     }

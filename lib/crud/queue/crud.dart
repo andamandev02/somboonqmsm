@@ -74,7 +74,7 @@ class ClassQueue {
         //   },
         // );
       } else {
-        print('Response body: ${response.body}');
+        // print('Response body: ${response.body}');
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -559,7 +559,7 @@ class ClassQueue {
           HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
         },
       );
-      print('${response.body}');
+      // print('${response.body}');
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.body);
