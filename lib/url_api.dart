@@ -73,6 +73,11 @@ String getApiBaseUrlUpdateQueue() {
   return '$apiBaseURL/api/v1/queue-mobile/update-queue';
 }
 
+// recall
+String getApiBaseUrlRecallQueue() {
+  return '$apiBaseURL/api/v1/queue-mobile/recall-queue';
+}
+
 String getApiBaseUrlRenderDisplay() {
   return '$apiBaseURL/api/v1/queue-mobile/render-display';
 }
@@ -86,5 +91,23 @@ final String callQueueUrl = getApiBaseUrlCallQueue();
 final String callerQueueUrl = getApiBaseUrlCallerQueue();
 final String callerQueueAllUrl = getApiBaseUrlCallerQueueAll();
 final String updateQueueUrl = getApiBaseUrlUpdateQueue();
+final String recallQueueUrl = getApiBaseUrlRecallQueue();
 
 final String renderDisplay = getApiBaseUrlRenderDisplay();
+
+const String logoUrl =
+    'https://firebasestorage.googleapis.com/v0/b/sys1-319107.appspot.com/o/uploads%2Fsys-logo.png?alt=media&token=7839089c-ef38-40d5-b93f-40f89dd19aee';
+const String demoToken =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoyLCJ1c2VybmFtZSI6InNtYXJ0Y2FyZSIsIm5hbWUiOiJTbWFydCBDYXJlIn0sIm5hbWUiOiJTbWFydCBDYXJlIiwianRpIjoyLCJpYXQiOjE2MzQ4MDg3OTgsIm5iZiI6MTYzNDgwODc5OCwiZXhwIjoxNjM0ODk1MTk4LCJpc3MiOiJodHRwczovL3d3dy5zeXNzY3JhcHF1ZXVlcy5jb20ifQ.lXkiffwKVvEdReex1LcYh2in625gGGy40zTbD9JLJYY';
+
+const String GITHUB_CLIENT_ID = '8085ede7fb7b993b51df';
+const String GITHUB_CLIENT_SECRET = 'c92d7fd359955d8be7f5c21ccc80f63eeb7c5b5d';
+const String GITHUB_CALLBACK_URL =
+    'https://sys1-319107.firebaseapp.com/__/auth/handler';
+
+const String SOCKET_IO_HOST = 'https://somboonqms.andamandev.com';
+// const String SOCKET_IO_HOST = 'https://540a-27-55-95-11.ngrok.io';
+const String SOCKET_IO_PATH = '/nodesomboonqms/socket.io';
+// const String SOCKET_IO_PATH = '/nodesomboonqms/socket.io';
+
+const String LONGDO_MAP_KEY = 'ed50eae671bfb054d5d4ef5126ebfbfa';

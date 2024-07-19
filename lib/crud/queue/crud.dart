@@ -294,6 +294,48 @@ class ClassQueue {
     }
   }
 
+  Future<void> RecallQueue(
+      {required BuildContext context,
+      required List<Map<String, dynamic>> SearchQueue,
+      required String StatusQueue}) async {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    try {
+      var body = jsonEncode({
+        'SearchQueue': jsonEncode(SearchQueue),
+        'StatusQueue': jsonEncode(StatusQueue),
+      });
+
+      final response = await http.post(
+        Uri.parse(updateQueueUrl),
+        headers: <String, String>{
+          HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
+        },
+        body: body,
+      );
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          AlertDialog alert = AlertDialog(
+            content: Text(
+              response.body,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: screenWidth * 0.05,
+                color: Color.fromRGBO(9, 159, 175, 1.0),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          );
+          return alert;
+        },
+      );
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
   static Future<void> searchqueue({
     required BuildContext context,
     required String branchid,
@@ -379,20 +421,18 @@ class ClassQueue {
         Timer(Duration(seconds: 2), () {
           Navigator.of(context).pop();
         });
-        // var bodyrender = jsonEncode({
-        //   'RenderDisplay': response.body,
-        // });
 
-        // final responserender = await http.post(
-        //   Uri.parse(renderDisplay),
-        //   headers: <String, String>{
-        //     HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
-        //   },
-        //   body: bodyrender,
-        // );
+        var bodyrender = jsonEncode({
+          'RenderDisplay': response.body,
+        });
 
-        // if (responserender.statusCode == 200) {
-        // print(responserender.body);
+        final responserender = await http.post(
+          Uri.parse(renderDisplay),
+          headers: <String, String>{
+            HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
+          },
+          body: bodyrender,
+        );
 
         // showDialog(
         //   context: context,
@@ -403,11 +443,19 @@ class ClassQueue {
         //         response.body,
         //         textAlign: TextAlign.center,
         //         style: TextStyle(
-        //           fontSize: 5,
+        //           fontSize: 12,
         //           color: Color.fromRGBO(9, 159, 175, 1.0),
         //           fontWeight: FontWeight.bold,
         //         ),
         //       ),
+        //       actions: [
+        //         TextButton(
+        //           child: Text('ปิด'),
+        //           onPressed: () {
+        //             Navigator.of(context).pop();
+        //           },
+        //         ),
+        //       ],
         //     );
         //     return alert;
         //   },
@@ -433,6 +481,28 @@ class ClassQueue {
             AlertDialog alert = AlertDialog(
               content: Text(
                 'มีคิวที่กำลังใช้งานอยู่',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.05,
+                  color: Color.fromRGBO(9, 159, 175, 1.0),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+            return alert;
+          },
+        );
+        Timer(Duration(seconds: 2), () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+        });
+      } else if (response.statusCode == 421) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            AlertDialog alert = AlertDialog(
+              content: Text(
+                'ไม่มีรายการคิว',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: screenWidth * 0.05,

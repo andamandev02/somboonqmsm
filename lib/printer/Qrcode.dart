@@ -64,7 +64,7 @@ Future<Uint8List> _createPdfWithText(Map<String, dynamic> _qrData) async {
 
   pdf.addPage(
     pw.Page(
-      pageFormat: PdfPageFormat.roll80,
+      pageFormat: PdfPageFormat.roll57,
       build: (pw.Context context) {
         return pw.Center(
           child: pw.Column(
@@ -95,15 +95,20 @@ Future<Uint8List> _createPdfWithText(Map<String, dynamic> _qrData) async {
               ),
               pw.SizedBox(height: 5),
               pw.Text(
-                'If your number has passed, Please get a new ticket.',
-                style: pw.TextStyle(fontSize: 6.0),
+                'If your number has passed,',
+                style: pw.TextStyle(fontSize: 10.0),
+              ),
+              pw.SizedBox(height: 5),
+              pw.Text(
+                'Please get a new ticket.',
+                style: pw.TextStyle(fontSize: 10.0),
               ),
               pw.SizedBox(height: 5),
               pw.Image(pdfQrImage, width: 80, height: 80),
               pw.SizedBox(height: 5),
               pw.Text(
                 'Everyone must be here to be seated.',
-                style: pw.TextStyle(fontSize: 10.0),
+                style: pw.TextStyle(fontSize: 8.0),
               ),
               pw.SizedBox(height: 2),
               pw.Text(
@@ -113,7 +118,7 @@ Future<Uint8List> _createPdfWithText(Map<String, dynamic> _qrData) async {
               pw.SizedBox(height: 10),
               pw.Text(
                 'Scan to see the current number.',
-                style: pw.TextStyle(fontSize: 10.0),
+                style: pw.TextStyle(fontSize: 8.0),
               ),
               pw.SizedBox(height: 5),
               pw.Text(

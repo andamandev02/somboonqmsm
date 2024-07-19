@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:somboonqms/crud/queue/crud.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:somboonqms/crud/socket.dart';
 
 class TabsCallingScreen extends StatefulWidget {
   // ignore: non_constant_identifier_names
@@ -31,7 +32,6 @@ class TabsCallingScreen extends StatefulWidget {
 }
 
 class _TabsCallingScreenState extends State<TabsCallingScreen> {
-  late IO.Socket socket;
   final TextEditingController _textPaxontroller = TextEditingController();
   // ignore: non_constant_identifier_names
   late List<Map<String, dynamic>> CallerList = [];
@@ -47,28 +47,9 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
   @override
   void initState() {
     super.initState();
-    connectToSocket();
     // รันรายการ caller
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       fetchCallerQueueAll(widget.Branch['branch_id']);
-    });
-  }
-
-  void connectToSocket() {
-    socket = IO.io(
-        'https://somboonqms.andamandev.com/nodesomboonqms/', <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': false,
-    });
-    socket.connect();
-    socket.on('connect', (_) {
-      print('Connected to the server');
-    });
-    socket.on('disconnect', (_) {
-      print('Disconnected from the server');
-    });
-    socket.on('recall_response', (data) {
-      print('Recall Response: $data');
     });
   }
 
@@ -104,7 +85,6 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    socket.dispose();
     _textPaxontroller.dispose();
     super.dispose();
   }
@@ -359,19 +339,19 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                 Expanded(
                                   child: ElevatedButton(
                                     onPressed: () async {
-                                      showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (BuildContext context) {
-                                          return const Dialog(
-                                            backgroundColor: Colors.transparent,
-                                            child: Center(
-                                              child:
-                                                  CircularProgressIndicator(),
-                                            ),
-                                          );
-                                        },
-                                      );
+                                      // showDialog(
+                                      //   context: context,
+                                      //   barrierDismissible: false,
+                                      //   builder: (BuildContext context) {
+                                      //     return const Dialog(
+                                      //       backgroundColor: Colors.transparent,
+                                      //       child: Center(
+                                      //         child:
+                                      //             CircularProgressIndicator(),
+                                      //       ),
+                                      //     );
+                                      //   },
+                                      // );
 
                                       await ClassQueue().CallerQueue(
                                         context: context,
@@ -1011,9 +991,10 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                             },
                                           );
 
-                                          socket.emit('recall', {
-                                            'message': 'Recall button clicked'
-                                          });
+                                          await SocketService().connectSocket(
+                                            context: context,
+                                            callerData: linkedQueue,
+                                          );
                                         },
                                         style: ElevatedButton.styleFrom(
                                           foregroundColor: Colors.white,
