@@ -14,6 +14,7 @@ class BranchListScreen extends StatefulWidget {
 }
 
 class _BranchListScreenState extends State<BranchListScreen> {
+  // ignore: non_constant_identifier_names
   List<Map<String, dynamic>> Branch = [];
 
   @override
@@ -25,6 +26,7 @@ class _BranchListScreenState extends State<BranchListScreen> {
   Future<void> fetchBranchList() async {
     ClassBranch.branchlist(
       context: context,
+      // ignore: non_constant_identifier_names
       onBranchListLoaded: (LoadingBranchList) {
         setState(() {
           Branch = LoadingBranchList;

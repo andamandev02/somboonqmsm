@@ -65,7 +65,6 @@
 //     final img.Image lgImage = img.decodeImage(logoBytes)!;
 
 //     // ข้อมูลข้อความ
-//     bytes += generator.image(img.copyResize(lgImage, width: 400, height: 400));
 //     bytes +=
 //         generator.text('Branch:${_qrData['data']['branch']['branch_name']}',
 //             styles: PosStyles(
@@ -102,7 +101,7 @@
 //           height: PosTextSize.size2,
 //           width: PosTextSize.size2,
 //         ));
-//     // bytes += generator.feed(1);
+//     bytes += generator.feed(1);
 //     bytes += generator.cut();
 
 //     // ส่งข้อมูลไปยังเครื่องพิมพ์

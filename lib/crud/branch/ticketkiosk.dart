@@ -6,6 +6,34 @@ import 'package:http/http.dart' as http;
 import 'package:somboonqms/url_api.dart';
 
 class ClassTicket {
+  static Future<void> EndQueueReasonlist({
+    required BuildContext context,
+    required String branchid,
+    required Function(List<Map<String, dynamic>>) onReasonLoaded,
+  }) async {
+    try {
+      final queryParameters = {
+        'branchid': branchid,
+      };
+      final response = await http.get(
+        Uri.parse(endQueueReasonlistUrl)
+            .replace(queryParameters: queryParameters),
+        headers: <String, String>{
+          HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
+        },
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = jsonDecode(response.body);
+        List<Map<String, dynamic>> Reason = (jsonData['data'] as List)
+            .map((item) => item as Map<String, dynamic>)
+            .toList();
+        onReasonLoaded(Reason);
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
   static Future<void> ticketkiosk({
     required BuildContext context,
     required String branchid,

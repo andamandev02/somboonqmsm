@@ -3,10 +3,16 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:somboonqms/printer/Qrcode.dart';
+// import 'package:somboonqms/connect/setthing.dart';
+import 'package:somboonqms/printing.dart';
 import 'package:somboonqms/url_api.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+
+import '../../printer/pdf.dart';
 
 class ClassQueue {
+  IO.Socket? socket;
+
   Future<void> createQueue({
     required BuildContext context,
     required String Pax,
@@ -37,6 +43,7 @@ class ClassQueue {
       if (response.statusCode == 200) {
         Map<String, dynamic> _qrData = jsonDecode(response.body);
         Timer(Duration(seconds: 2), () {
+          TestPrint testPrint = TestPrint();
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -49,10 +56,20 @@ class ClassQueue {
               );
             },
           );
-          showQRCodeDialog(context, _qrData);
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PDFViewTicket(_qrData), // Pass qrData
+            ),
+          ).then((_) {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+          });
+
+          // showQRCodeDialog(context, _qrData);
+          // testPrint.sample(context, _qrData);
         });
         // print(response.body);
         // showDialog(
@@ -74,9 +91,10 @@ class ClassQueue {
         //   },
         // );
       } else {
-        print('Response body: ${response.body}');
+        // print('Response body: ${response.body}');
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (BuildContext context) {
             AlertDialog alert = AlertDialog(
               content: Text(
@@ -109,6 +127,17 @@ class ClassQueue {
     double screenHeight = MediaQuery.of(context).size.height;
 
     try {
+      socket = IO.io(
+        // 'https://somboonqms.andamandev.com',
+        SOCKET_IO_HOST,
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setPath(SOCKET_IO_PATH)
+            .setExtraHeaders({'Connection': 'upgrade', 'Upgrade': 'websocket'})
+            .enableForceNew()
+            .build(),
+      );
+
       var body = jsonEncode({
         'SearchQueue': jsonEncode(SearchQueue),
       });
@@ -121,51 +150,122 @@ class ClassQueue {
         body: body,
       );
       if (response.statusCode == 200) {
-        Timer(Duration(seconds: 2), () {
-          Navigator.of(context).pop();
-        });
-        // showDialog(
-        //   context: context,
-        //   builder: (BuildContext context) {
-        //     AlertDialog alert = AlertDialog(
-        //       content: Text(
-        //         response.body,
-        //         textAlign: TextAlign.center,
-        //         style: TextStyle(
-        //           fontSize: screenWidth * 0.02,
-        //           color: Color.fromRGBO(9, 159, 175, 1.0),
-        //           fontWeight: FontWeight.bold,
-        //         ),
-        //       ),
-        //     );
-        //     return alert;
-        //   },
-        // );
-      } else if (response.statusCode == 422) {
+        Map<String, dynamic> jsonData = jsonDecode(response.body);
+        Map<String, dynamic> data = jsonData['data'];
+        Map<String, dynamic> queue = data['queue'];
+        String queueNo = queue['queue_no'];
+
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (BuildContext context) {
-            AlertDialog alert = AlertDialog(
-              content: Text(
-                'มีคิวที่กำลังใช้งานอยู่',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.05,
-                  color: Color.fromRGBO(9, 159, 175, 1.0),
-                  fontWeight: FontWeight.bold,
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              backgroundColor: Colors.white,
+              content: Container(
+                padding: EdgeInsets.all(screenWidth * 0.05),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: Color.fromRGBO(255, 0, 0, 1),
+                      size: screenWidth * 0.2,
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    Text(
+                      'กำลังเรียกคิว',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.08,
+                        color: Color.fromRGBO(9, 159, 175, 1.0),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    Text(
+                      queueNo,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.10,
+                        color: Color.fromRGBO(9, 159, 175, 1.0),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
-            return alert;
           },
         );
+
+        socket?.onConnect((_) {
+          print('Connection established');
+          connectionStatus = "Connected";
+          socket?.emit(
+              CALL, <String, dynamic>{'queue': 'call', 'data': jsonData});
+        });
+
         Timer(Duration(seconds: 2), () {
           Navigator.of(context).pop();
+          DefaultTabController.of(context).animateTo(0);
+        });
+      } else if (response.statusCode == 422) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              backgroundColor: Colors.white,
+              content: Container(
+                padding: EdgeInsets.all(screenWidth * 0.05),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: Color.fromRGBO(255, 0, 0, 1),
+                      size: screenWidth * 0.2,
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    Text(
+                      'มีคิวที่กำลังใช้งานอยู่',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.08,
+                        color: Color.fromRGBO(9, 159, 175, 1.0),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    Text(
+                      'กรุณาเคลียคิวให้เสร็จสิ้น',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.05,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+
+        Timer(Duration(seconds: 2), () {
           Navigator.of(context).pop();
         });
       } else {
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (BuildContext context) {
             AlertDialog alert = AlertDialog(
               content: Text(
@@ -195,14 +295,27 @@ class ClassQueue {
   Future<void> UpdateQueue(
       {required BuildContext context,
       required List<Map<String, dynamic>> SearchQueue,
-      required String StatusQueue}) async {
+      required String StatusQueue,
+      required String StatusQueueNote}) async {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
     try {
+      socket = IO.io(
+        // 'https://somboonqms.andamandev.com',
+        SOCKET_IO_HOST,
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setPath(SOCKET_IO_PATH)
+            .setExtraHeaders({'Connection': 'upgrade', 'Upgrade': 'websocket'})
+            .enableForceNew()
+            .build(),
+      );
+
       var body = jsonEncode({
         'SearchQueue': jsonEncode(SearchQueue),
         'StatusQueue': jsonEncode(StatusQueue),
+        'StatusQueueNote': jsonEncode(StatusQueueNote),
       });
 
       final response = await http.post(
@@ -212,82 +325,177 @@ class ClassQueue {
         },
         body: body,
       );
+
       if (response.statusCode == 200) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return const Dialog(
-              backgroundColor: Colors.transparent,
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          },
-        );
-        Timer(Duration(seconds: 2), () {
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-          // Navigator.of(context).pop();
-        });
-        // showDialog(
-        //   context: context,
-        //   builder: (BuildContext context) {
-        //     AlertDialog alert = AlertDialog(
-        //       content: Text(
-        //         // 'บันทึกคิวสำเร็จ',
-        //         response.body,
-        //         textAlign: TextAlign.center,
-        //         style: TextStyle(
-        //           fontSize: screenWidth * 0.05,
-        //           color: Color.fromRGBO(9, 159, 175, 1.0),
-        //           fontWeight: FontWeight.bold,
-        //         ),
-        //       ),
-        //     );
-        //     return alert;
-        //   },
-        // );
-      } else if (response.statusCode == 422) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            AlertDialog alert = AlertDialog(
-              content: Text(
-                'มีคิวที่กำลังใช้งานอยู่',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.05,
-                  color: Color.fromRGBO(9, 159, 175, 1.0),
-                  fontWeight: FontWeight.bold,
+        Map<String, dynamic> jsonData = jsonDecode(response.body);
+
+        var ToSocket = '';
+        String ToMsg = '';
+        if (StatusQueue == 'Calling') {
+          ToSocket = CALL;
+          ToMsg = "กำลังเรียกคิว";
+        } else if (StatusQueue == 'Holding') {
+          ToSocket = HOLD;
+          ToMsg = "กำลังพักคิว";
+        } else if (StatusQueue == 'Ending') {
+          ToSocket = FINISH;
+          ToMsg = "กำลังยกเลิกคิว";
+        } else if (StatusQueue == 'Finishing') {
+          ToSocket = FINISH;
+          ToMsg = "กำลังจบคิว";
+        } else if (StatusQueue == 'Recalling') {
+          ToSocket = CALL;
+          ToMsg = "กำลังเรียกคิวซ้ำ";
+        }
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0),
                 ),
-              ),
-            );
-            return alert;
-          },
-        );
-        Timer(Duration(seconds: 2), () {
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
+                backgroundColor: Colors.white,
+                content: Container(
+                  padding: EdgeInsets.all(screenWidth * 0.05),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: Color.fromRGBO(255, 0, 0, 1),
+                        size: screenWidth * 0.2,
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      Text(
+                        ToMsg,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.07,
+                          color: Color.fromRGBO(9, 159, 175, 1.0),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      Text(
+                        jsonData['data']['data']['queue']['queue_no'],
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.10,
+                          color: Color.fromRGBO(9, 159, 175, 1.0),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+
+          Timer(Duration(seconds: 2), () {
+            Navigator.of(context).pop();
+            DefaultTabController.of(context).animateTo(0);
+          });
+        });
+
+        socket?.onConnect((_) {
+          print('Connection established');
+          connectionStatus = "Connected";
+          socket?.emit(ToSocket,
+              <String, dynamic>{'queue': ToSocket, 'data': jsonData['data']});
+        });
+
+        socket?.onConnectError((err) {
+          print('Connect Error: $err');
+          connectionStatus = "Connection Error: $err";
+        });
+
+        socket?.onError((err) {
+          print('Error: $err');
+          connectionStatus = "Error: $err";
+        });
+
+        socket?.connect();
+      } else if (response.statusCode == 422) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+                backgroundColor: Colors.white,
+                content: Container(
+                  padding: EdgeInsets.all(screenWidth * 0.05),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: Color.fromRGBO(255, 0, 0, 1),
+                        size: screenWidth * 0.2,
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      Text(
+                        'มีคิวที่กำลังใช้งานอยู่',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.08,
+                          color: Color.fromRGBO(9, 159, 175, 1.0),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      Text(
+                        'กรุณาเคลียคิวให้เสร็จสิ้น',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.05,
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+
+          Timer(Duration(seconds: 2), () {
+            Navigator.of(context, rootNavigator: true).pop();
+          });
         });
       } else {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            AlertDialog alert = AlertDialog(
-              content: Text(
-                response.body,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.05,
-                  color: Color.fromRGBO(9, 159, 175, 1.0),
-                  fontWeight: FontWeight.bold,
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              AlertDialog alert = AlertDialog(
+                content: Text(
+                  response.body,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.05,
+                    color: Color.fromRGBO(9, 159, 175, 1.0),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            );
-            return alert;
-          },
-        );
+              );
+              return alert;
+            },
+          );
+
+          Timer(Duration(seconds: 2), () {
+            Navigator.of(context, rootNavigator: true).pop();
+          });
+        });
       }
     } catch (e) {
       print('Error: $e');
@@ -316,6 +524,7 @@ class ClassQueue {
       );
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (BuildContext context) {
           AlertDialog alert = AlertDialog(
             content: Text(
@@ -402,12 +611,22 @@ class ClassQueue {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     try {
+      socket = IO.io(
+        // 'https://somboonqms.andamandev.com',
+        SOCKET_IO_HOST,
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setPath(SOCKET_IO_PATH)
+            .setExtraHeaders({'Connection': 'upgrade', 'Upgrade': 'websocket'})
+            .enableForceNew()
+            .build(),
+      );
+
       var body = jsonEncode({
         'TicketKioskDetail': TicketKioskDetail,
         'Branch': Branch,
         'Kiosk': Kiosk,
       });
-
       final response = await http.post(
         // Uri.parse(callerQueueUrl),
         Uri.parse(callQueueUrl),
@@ -416,111 +635,225 @@ class ClassQueue {
         },
         body: body,
       );
+
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.body);
-        Timer(Duration(seconds: 2), () {
-          Navigator.of(context).pop();
+        Map<String, dynamic> data = jsonData['data'];
+        Map<String, dynamic> innerData = data['data'];
+        Map<String, dynamic> innerDataS = innerData['queue'];
+        String queueNo = innerDataS['queue_no'].toString();
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                ),
+                backgroundColor: Colors.white,
+                content: Container(
+                  padding: EdgeInsets.all(screenWidth * 0.05),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: Color.fromRGBO(255, 0, 0, 1),
+                        size: screenWidth * 0.2,
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      Text(
+                        'กำลังเรียกคิว',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.08,
+                          color: Color.fromRGBO(9, 159, 175, 1.0),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      Text(
+                        queueNo,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.10,
+                          color: Color.fromRGBO(9, 159, 175, 1.0),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+
+          socket?.onConnect((_) {
+            print('Connection established');
+            connectionStatus = "Connected";
+            socket?.emit(
+                CALL, <String, dynamic>{'queue': 'call', 'data': jsonData});
+          });
+
+          var bodyrender = jsonEncode({
+            'RenderDisplay': response.body,
+          });
+
+          final responserender = await http.post(
+            Uri.parse(renderDisplay),
+            headers: <String, String>{
+              HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
+            },
+            body: bodyrender,
+          );
+
+          // if (jsonData.containsKey('data') &&
+          //     jsonData['data'] is Map<String, dynamic>) {
+          //   Map<String, dynamic> data = jsonData['data'];
+          //   List<Map<String, dynamic>> callerList = [
+          //     data['caller'],
+          //     data['callertrans'],
+          //     data['queue']
+          //   ];
+          //   onCallerLoaded(callerList);
+          // } else {
+          //   onCallerLoaded([]);
+          // }
+
+          if (innerData.containsKey('data') &&
+              innerData['data'] is Map<String, dynamic>) {
+            Map<String, dynamic> data = innerData['data'];
+            List<Map<String, dynamic>> callerList = [
+              data['caller'],
+              data['callertrans'],
+              data['queue']
+            ];
+            onCallerLoaded(callerList);
+          } else {
+            onCallerLoaded([]);
+          }
+
+          socket?.onConnectError((err) {
+            print('Connect Error: $err');
+            connectionStatus = "Connection Error: $err";
+          });
+
+          socket?.onError((err) {
+            print('Error: $err');
+            connectionStatus = "Error: $err";
+          });
+
+          socket?.connect();
+
+          Timer(Duration(seconds: 2), () {
+            Navigator.of(context).pop();
+          });
         });
-
-        var bodyrender = jsonEncode({
-          'RenderDisplay': response.body,
-        });
-
-        final responserender = await http.post(
-          Uri.parse(renderDisplay),
-          headers: <String, String>{
-            HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
-          },
-          body: bodyrender,
-        );
-
-        // showDialog(
-        //   context: context,
-        //   builder: (BuildContext context) {
-        //     AlertDialog alert = AlertDialog(
-        //       content: Text(
-        //         // 'บันทึกคิวสำเร็จ',
-        //         response.body,
-        //         textAlign: TextAlign.center,
-        //         style: TextStyle(
-        //           fontSize: 12,
-        //           color: Color.fromRGBO(9, 159, 175, 1.0),
-        //           fontWeight: FontWeight.bold,
-        //         ),
-        //       ),
-        //       actions: [
-        //         TextButton(
-        //           child: Text('ปิด'),
-        //           onPressed: () {
-        //             Navigator.of(context).pop();
-        //           },
-        //         ),
-        //       ],
-        //     );
-        //     return alert;
-        //   },
-        // );
-
-        if (jsonData.containsKey('data') &&
-            jsonData['data'] is Map<String, dynamic>) {
-          Map<String, dynamic> data = jsonData['data'];
-          List<Map<String, dynamic>> callerList = [
-            data['caller'],
-            data['callertrans'],
-            data['queue']
-          ];
-          onCallerLoaded(callerList);
-        } else {
-          onCallerLoaded([]);
-        }
-        // }
       } else if (response.statusCode == 422) {
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (BuildContext context) {
-            AlertDialog alert = AlertDialog(
-              content: Text(
-                'มีคิวที่กำลังใช้งานอยู่',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.05,
-                  color: Color.fromRGBO(9, 159, 175, 1.0),
-                  fontWeight: FontWeight.bold,
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              backgroundColor: Colors.white,
+              content: Container(
+                padding: EdgeInsets.all(screenWidth * 0.05),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: Color.fromRGBO(255, 0, 0, 1),
+                      size: screenWidth * 0.2,
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    Text(
+                      'มีคิวที่กำลังใช้งานอยู่',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.08,
+                        color: Color.fromRGBO(9, 159, 175, 1.0),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    Text(
+                      'กรุณาเคลียคิวให้เสร็จสิ้น',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.05,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
-            return alert;
           },
         );
+
         Timer(Duration(seconds: 2), () {
-          Navigator.of(context).pop();
           Navigator.of(context).pop();
         });
       } else if (response.statusCode == 421) {
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (BuildContext context) {
-            AlertDialog alert = AlertDialog(
-              content: Text(
-                'ไม่มีรายการคิว',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: screenWidth * 0.05,
-                  color: Color.fromRGBO(9, 159, 175, 1.0),
-                  fontWeight: FontWeight.bold,
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              backgroundColor: Colors.white,
+              content: Container(
+                padding: EdgeInsets.all(screenWidth * 0.05),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: Color.fromRGBO(255, 0, 0, 1),
+                      size: screenWidth * 0.2,
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    Text(
+                      'ไม่มีรายการคิว',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.08,
+                        color: Color.fromRGBO(9, 159, 175, 1.0),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.02),
+                    Text(
+                      'กรุณาโปรดเตรียมคิว',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.05,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
-            return alert;
           },
         );
         Timer(Duration(seconds: 2), () {
-          Navigator.of(context).pop();
+          // Navigator.of(context).pop();
           Navigator.of(context).pop();
         });
       } else {
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (BuildContext context) {
             AlertDialog alert = AlertDialog(
               content: Text(
@@ -559,7 +892,6 @@ class ClassQueue {
           HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
         },
       );
-      print('${response.body}');
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.body);

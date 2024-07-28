@@ -94,13 +94,13 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
                 Text(
                   widget.Branch['branch_name'],
                   style: TextStyle(
-                      color: Colors.white, fontSize: screenHeight * 0.02),
+                      color: Colors.white, fontSize: screenHeight * 0.03),
                 ),
-                Text(
-                  '${widget.Kiosk['t_kiosk_label']}',
-                  style: TextStyle(
-                      color: Colors.white, fontSize: screenHeight * 0.02),
-                ),
+                // Text(
+                //   '${widget.Kiosk['t_kiosk_label']}',
+                //   style: TextStyle(
+                //       color: Colors.white, fontSize: screenHeight * 0.05),
+                // ),
               ],
             ),
           ],
@@ -118,14 +118,14 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
             children: [
               TabBar(
                 tabs: [
-                  _buildTab('Calling', 0),
+                  _buildTab('เรียกคิว', 0),
                   _buildTab(
-                      'Wait (${SearchQueue.where((item) => item['service_status_id'] == '1').length})',
+                      'คิวรอ (${SearchQueue.where((item) => item['service_status_id'] == '1').length})',
                       1),
                   _buildTab(
-                      'Hold (${SearchQueue.where((item) => item['service_status_id'] == '3').length})',
+                      'คิวพัก (${SearchQueue.where((item) => item['service_status_id'] == '3').length})',
                       2),
-                  _buildTab('All (${SearchQueue.length})', 3),
+                  _buildTab('ทั้งหมด (${SearchQueue.length})', 3),
                 ],
                 onTap: (index) {
                   setState(() {
@@ -142,12 +142,15 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
                         TicketKioskDetail: TicketKioskDetail,
                         SearchQueue: SearchQueue),
                     TabsWaitingScreen(
+                      Branch: widget.Branch,
                       SearchQueue: SearchQueue,
                     ),
                     TabsHoldScreen(
+                      Branch: widget.Branch,
                       SearchQueue: SearchQueue,
                     ),
                     TabsAllScreen(
+                      Branch: widget.Branch,
                       SearchQueue: SearchQueue,
                     ),
                   ],
@@ -161,18 +164,18 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
   }
 
   Widget _buildTab(String text, int index) {
+    // ดึงขนาดหน้าจอ
+    double screenWidth = MediaQuery.of(context).size.width;
+    double fontSize = screenWidth * 0.045;
+
     return Tab(
       child: Text(
         text,
         style: TextStyle(
-          color: _selectedIndex == index
-              ? Colors.white
-              : Colors.white, // กำหนดสีข้อความของแท็บ
-          fontSize:
-              _selectedIndex == index ? 15 : 14, // กำหนดขนาดตัวอักษรของแท็บ
-          fontWeight: _selectedIndex == index
-              ? FontWeight.bold
-              : FontWeight.normal, // กำหนดความหนาของตัวอักษรของแท็บ
+          color: _selectedIndex == index ? Colors.white : Colors.white,
+          fontSize: _selectedIndex == index ? fontSize : fontSize,
+          fontWeight:
+              _selectedIndex == index ? FontWeight.bold : FontWeight.normal,
         ),
       ),
     );

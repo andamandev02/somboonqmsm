@@ -111,29 +111,29 @@ class _TicketKioskListScreenState extends State<TicketKioskListScreen> {
                               margin: const EdgeInsets.symmetric(vertical: 5.0),
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  final result = await Navigator.push(
+                                  // final result = await Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder: (context) => LoadingScreen(
+                                  //       message: 'กำลังตรวจสอบรายการบริการ',
+                                  //       onLoadComplete: _handleLoading,
+                                  //       delay: const Duration(
+                                  //           seconds: 3), // กำหนดเวลาหน่วงที่นี่
+                                  //     ),
+                                  //   ),
+                                  // );
+
+                                  // if (result == true) {
+                                  Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => LoadingScreen(
-                                        message: 'กำลังตรวจสอบรายการบริการ',
-                                        onLoadComplete: _handleLoading,
-                                        delay: const Duration(
-                                            seconds: 3), // กำหนดเวลาหน่วงที่นี่
-                                      ),
+                                      builder: (context) =>
+                                          TicketKioskDetailScreen(
+                                              Branch: widget.branch,
+                                              Kiosk: Kiosk[index]),
                                     ),
                                   );
-
-                                  if (result == true) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            TicketKioskDetailScreen(
-                                                Branch: widget.branch,
-                                                Kiosk: Kiosk[index]),
-                                      ),
-                                    );
-                                  }
+                                  // }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.black,

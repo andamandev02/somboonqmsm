@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:somboonqms/crud/branch/ticketkiosk.dart';
 import 'package:somboonqms/crud/queue/crud.dart';
+import 'package:somboonqms/crud/socket.dart';
 
 class TabsAllScreen extends StatefulWidget {
   final List<Map<String, dynamic>> SearchQueue;
+  final Map<String, dynamic> Branch;
   const TabsAllScreen({
     super.key,
     required this.SearchQueue,
+    required this.Branch,
   });
 
   @override
@@ -15,6 +21,28 @@ class TabsAllScreen extends StatefulWidget {
 
 class _TabsAllScreenState extends State<TabsAllScreen> {
   String? _selectedReason;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchReason(widget.Branch['branch_id']);
+  }
+
+  late List<Map<String, dynamic>> Reason = [];
+  bool isLoading = true;
+
+  Future<void> fetchReason(String branchid) async {
+    await ClassTicket.EndQueueReasonlist(
+      context: context,
+      branchid: branchid,
+      onReasonLoaded: (loadedReason) {
+        setState(() {
+          Reason = loadedReason;
+          isLoading = false;
+        });
+      },
+    );
+  }
 
   String formatQueueTime(String queueTime) {
     try {
@@ -35,6 +63,19 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
     } catch (e) {
       return 'Invalid time';
     }
+  }
+
+  String calculateTimeDifference(String queueTime) {
+    DateTime now = DateTime.now();
+    DateTime parsedTime = DateTime(now.year, now.month, now.day,
+        int.parse(queueTime.split(":")[0]), int.parse(queueTime.split(":")[1]));
+    Duration difference = now.difference(parsedTime);
+    int differenceInSeconds = difference.inSeconds;
+    int hours = difference.inHours;
+    int minutes = (differenceInSeconds % 3600) ~/ 60;
+    int seconds = differenceInSeconds % 60;
+    // return '${hours}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    return '${hours}:${minutes.toString().padLeft(2, '0')}';
   }
 
   Widget buildTimeText(String dateTimeString) {
@@ -136,7 +177,7 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                             child: Column(
                               children: [
                                 Text(
-                                  '(สร้างคิว)',
+                                  '(ออกคิว)',
                                   style: const TextStyle(
                                     fontSize: 10,
                                     color: Colors.black,
@@ -168,6 +209,29 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                                 ),
                                 Text(
                                   '${item['hold_time'] ?? '-'}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color.fromRGBO(9, 159, 175, 1.0),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  '(เวลารอ)',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  calculateTimeDifference(item['queue_time']),
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: Color.fromRGBO(9, 159, 175, 1.0),
@@ -219,10 +283,10 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                               ),
                             ),
                             child: const Text(
-                              'End',
+                              'จบคิว',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 15.0,
+                                fontSize: 20.0,
                               ),
                             ),
                           ),
@@ -231,19 +295,6 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (BuildContext context) {
-                                  return const Dialog(
-                                    backgroundColor: Colors.transparent,
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                },
-                              );
-
                               await ClassQueue().CallQueue(
                                 context: context,
                                 SearchQueue: [item],
@@ -259,7 +310,7 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                               ),
                             ),
                             child: const Text(
-                              'Call',
+                              'เรียกคิว',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15.0,
@@ -350,7 +401,7 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                             child: Column(
                               children: [
                                 Text(
-                                  '(สร้างคิว)',
+                                  '(ออกคิว)',
                                   style: const TextStyle(
                                     fontSize: 10,
                                     color: Colors.black,
@@ -379,7 +430,14 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () async {},
+                            onPressed: () async {
+                              await ClassQueue().UpdateQueue(
+                                context: context,
+                                SearchQueue: [item],
+                                StatusQueue: 'Recalling',
+                                StatusQueueNote: Reason[index]['reason_id'],
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor:
@@ -391,7 +449,7 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                               ),
                             ),
                             child: const Text(
-                              'Recall',
+                              'เรียกซ้ำ',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15.0,
@@ -403,23 +461,11 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (BuildContext context) {
-                                  return const Dialog(
-                                    backgroundColor: Colors.transparent,
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                },
-                              );
-
                               await ClassQueue().UpdateQueue(
                                 context: context,
                                 SearchQueue: [item],
                                 StatusQueue: 'Holding',
+                                StatusQueueNote: Reason[index]['reason_id'],
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -433,10 +479,10 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                               ),
                             ),
                             child: const Text(
-                              'Hold',
+                              'พักคิว',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 15.0,
+                                fontSize: 20.0,
                               ),
                             ),
                           ),
@@ -475,10 +521,10 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                               ),
                             ),
                             child: const Text(
-                              'End',
+                              'จบคิว',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 15.0,
+                                fontSize: 20.0,
                               ),
                             ),
                           ),
@@ -566,7 +612,7 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                             child: Column(
                               children: [
                                 Text(
-                                  '(สร้างคิว)',
+                                  '(ออกคิว)',
                                   style: const TextStyle(
                                     fontSize: 10,
                                     color: Colors.black,
@@ -649,10 +695,10 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                               ),
                             ),
                             child: const Text(
-                              'End',
+                              'จบคิว',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 15.0,
+                                fontSize: 20.0,
                               ),
                             ),
                           ),
@@ -661,27 +707,11 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () async {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (BuildContext context) {
-                                  return const Dialog(
-                                    backgroundColor: Colors.transparent,
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                },
-                              );
-
-                              // await ClassQueue().CallQueue(
-                              //   context: context,
-                              //   SearchQueue: [item],
-                              // );
                               await ClassQueue().UpdateQueue(
                                 context: context,
                                 SearchQueue: [item],
                                 StatusQueue: 'Calling',
+                                StatusQueueNote: Reason[index]['reason_id'],
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -694,7 +724,7 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                               ),
                             ),
                             child: const Text(
-                              'Call',
+                              'เรียกคิว',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15.0,
@@ -786,7 +816,7 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                             child: Column(
                               children: [
                                 Text(
-                                  '(สร้างคิว)',
+                                  '(ออกคิว)',
                                   style: const TextStyle(
                                     fontSize: 10,
                                     color: Colors.black,
@@ -937,7 +967,7 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
                             child: Column(
                               children: [
                                 Text(
-                                  '(สร้างคิว)',
+                                  '(ออกคิว)',
                                   style: const TextStyle(
                                     fontSize: 10,
                                     color: Colors.black,
@@ -1020,108 +1050,294 @@ class _TabsAllScreenState extends State<TabsAllScreen> {
     );
   }
 
-  void _showSaveDialog(BuildContext context, List<Map<String, dynamic>> item) {
+  void _showSaveDialog(
+      BuildContext context, List<Map<String, dynamic>> linkedQueue) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Center(
-            child: Text(
-              'บันทึกการสิ้นสุดรายการ',
-              style: TextStyle(
-                fontSize: 20,
-                color: Color.fromRGBO(9, 159, 175, 1.0),
-              ),
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Divider(),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () async {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return const Dialog(
-                        backgroundColor: Colors.transparent,
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    },
-                  );
-
-                  await ClassQueue().UpdateQueue(
-                    context: context,
-                    SearchQueue:
-                        item, // Adjust this based on your map structure
-                    StatusQueue: 'Finishing',
-                  );
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: const Color.fromRGBO(9, 159, 175, 1.0),
-                ),
-                child: Center(
-                  child: Text('เข้ารับบริการเรียบร้อย'),
-                ),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () async {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return const Dialog(
-                        backgroundColor: Colors.transparent,
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    },
-                  );
-
-                  await ClassQueue().UpdateQueue(
-                    context: context,
-                    SearchQueue:
-                        item, // Adjust this based on your map structure
-                    StatusQueue: 'Ending',
-                  );
-                  Navigator.of(context).pop();
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Color.fromARGB(255, 255, 0, 0),
-                ),
-                child: Center(
-                  child: Text('ยกเลิกรายการ'),
-                ),
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Color.fromARGB(255, 255, 0, 0),
-                    ),
-                    child: Center(
-                      child: Text('ปิด'),
+        return Dialog(
+          child: Container(
+            width: screenWidth * 0.9, // กำหนดความกว้างของ Dialog
+            padding: EdgeInsets.all(20.0), // เพิ่ม padding รอบๆ
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // ปรับขนาดของ Column ตามเนื้อหา
+              children: [
+                Center(
+                  child: Text(
+                    'บันทึกสิ้นสุดรายการ',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Color.fromRGBO(9, 159, 175, 1.0),
                     ),
                   ),
-                ],
-              )
-            ],
+                ),
+                SizedBox(height: 20), // เพิ่มระยะห่างระหว่าง title และเนื้อหา
+                Reason.isEmpty
+                    ? Center(
+                        child: Text(
+                          'ไม่มีรายการร้องขอ',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenHeight * 0.025,
+                          ),
+                        ),
+                      )
+                    : Wrap(
+                        spacing: 10, // ระยะห่างระหว่างปุ่ม
+                        runSpacing: 10, // ระยะห่างระหว่างแถวของปุ่ม
+                        children: List.generate(
+                          Reason.length,
+                          (index) {
+                            if (Reason[index]['reason_id'] == '1') {
+                              return ElevatedButton(
+                                onPressed: () async {
+                                  var ReasonNote = '';
+                                  if (Reason[index]['reason_id'] == '1') {
+                                    ReasonNote = 'Finishing';
+                                  } else {
+                                    ReasonNote = 'Ending';
+                                  }
+
+                                  await ClassQueue().UpdateQueue(
+                                    context: context,
+                                    SearchQueue: linkedQueue,
+                                    StatusQueue: ReasonNote,
+                                    StatusQueueNote: Reason[index]['reason_id'],
+                                  );
+
+                                  Navigator.of(context).pop();
+                                  Navigator.of(context).pop();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.black,
+                                  backgroundColor:
+                                      const Color.fromRGBO(9, 159, 175, 1.0),
+                                  minimumSize: Size(
+                                      screenWidth * 0.8, screenHeight * 0.1),
+                                  shape: RoundedRectangleBorder(),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: screenWidth * 0.04),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '${Reason[index]['reson_name']}',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: screenHeight *
+                                            0.025, // ปรับขนาดข้อความตามขนาดหน้าจอ
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            } else {
+                              return ElevatedButton(
+                                onPressed: () async {
+                                  var ReasonNote = '';
+                                  if (Reason[index]['reason_id'] == '1') {
+                                    ReasonNote = 'Finishing';
+                                  } else {
+                                    ReasonNote = 'Ending';
+                                  }
+
+                                  await ClassQueue().UpdateQueue(
+                                    context: context,
+                                    SearchQueue: linkedQueue,
+                                    StatusQueue: ReasonNote,
+                                    StatusQueueNote: Reason[index]['reason_id'],
+                                  );
+
+                                  Timer(Duration(seconds: 2), () {
+                                    Navigator.of(context).pop();
+                                    // Navigator.of(context).pop();
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.black,
+                                  backgroundColor:
+                                      Color.fromARGB(255, 219, 118, 2),
+                                  minimumSize: Size(
+                                      screenWidth * 0.8, screenHeight * 0.1),
+                                  shape: RoundedRectangleBorder(),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: screenWidth * 0.04),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '${Reason[index]['reson_name']}',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: screenHeight *
+                                            0.025, // ปรับขนาดข้อความตามขนาดหน้าจอ
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black,
+                    backgroundColor: const Color.fromARGB(255, 255, 0, 0),
+                    minimumSize: Size(screenWidth * 0.8, screenHeight * 0.1),
+                    shape: RoundedRectangleBorder(),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'ปิดหน้าต่าง',
+                        style: TextStyle(
+                          color: Color.fromRGBO(255, 255, 255, 1),
+                          fontSize: screenHeight *
+                              0.025, // ปรับขนาดข้อความตามขนาดหน้าจอ
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSaveDialog1(BuildContext context, List<Map<String, dynamic>> item) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Container(
+            width: screenWidth * 0.9, // กำหนดความกว้างของ Dialog
+            padding: EdgeInsets.all(20.0), // เพิ่ม padding รอบๆ
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // ปรับขนาดของ Column ตามเนื้อหา
+              children: [
+                Center(
+                  child: Text(
+                    'บันทึกสิ้นสุดรายการ',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Color.fromRGBO(9, 159, 175, 1.0),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20), // เพิ่มระยะห่างระหว่าง title และเนื้อหา
+                Reason.isEmpty
+                    ? Center(
+                        child: Text(
+                          'ไม่มีรายการร้องขอ',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: screenHeight * 0.025,
+                          ),
+                        ),
+                      )
+                    : Wrap(
+                        spacing: 10, // ระยะห่างระหว่างปุ่ม
+                        runSpacing: 10, // ระยะห่างระหว่างแถวของปุ่ม
+                        children: List.generate(
+                          Reason.length,
+                          (index) => ElevatedButton(
+                            onPressed: () async {
+                              var ReasonNote = '';
+                              if (Reason[index]['reason_id'] == '1') {
+                                ReasonNote = 'Finishing';
+                              } else {
+                                ReasonNote = 'Ending';
+                              }
+
+                              await ClassQueue().UpdateQueue(
+                                context: context,
+                                SearchQueue: item,
+                                StatusQueue: ReasonNote,
+                                StatusQueueNote: Reason[index]['reason_id'],
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.black,
+                              backgroundColor:
+                                  const Color.fromRGBO(9, 159, 175, 1.0),
+                              minimumSize:
+                                  Size(screenWidth * 0.8, screenHeight * 0.1),
+                              side: BorderSide(color: Colors.black),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50.0),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: screenWidth * 0.04),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${Reason[index]['reson_name']}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: screenHeight *
+                                        0.025, // ปรับขนาดข้อความตามขนาดหน้าจอ
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black,
+                    backgroundColor: const Color.fromARGB(255, 255, 0, 0),
+                    minimumSize: Size(screenWidth * 0.8, screenHeight * 0.1),
+                    side: BorderSide(color: Colors.black),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50.0),
+                    ),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'ปิดหน้าต่าง',
+                        style: TextStyle(
+                          color: Color.fromRGBO(255, 255, 255, 1),
+                          fontSize: screenHeight *
+                              0.025, // ปรับขนาดข้อความตามขนาดหน้าจอ
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

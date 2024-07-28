@@ -38,6 +38,11 @@ String getApiBaseUrlTicketKioskList() {
   return '$apiBaseURL/api/v1/queue-mobile/ticket-kiosk-list';
 }
 
+// รายการจบคิว
+String getApiBaseUrlEndQueueList() {
+  return '$apiBaseURL/api/v1/queue-mobile/reason-all';
+}
+
 // รายละเอียดข้อมูลจุดออกบัตรคิว
 String getApiBaseUrlTicketKioskDetail() {
   return '$apiBaseURL/api/v1/queue-mobile/ticket-kiosk-detail';
@@ -84,6 +89,7 @@ String getApiBaseUrlRenderDisplay() {
 
 final String branchListUrl = getApiBaseUrlBranchList();
 final String ticketKioskListUrl = getApiBaseUrlTicketKioskList();
+final String endQueueReasonlistUrl = getApiBaseUrlEndQueueList();
 final String ticketKioskDetailUrl = getApiBaseUrlTicketKioskDetail();
 final String createQueueUrl = getApiBaseUrlCreateQueue();
 final String searchQueueUrl = getApiBaseUrlSearchQueue();
@@ -108,6 +114,40 @@ const String GITHUB_CALLBACK_URL =
 const String SOCKET_IO_HOST = 'https://somboonqms.andamandev.com';
 // const String SOCKET_IO_HOST = 'https://540a-27-55-95-11.ngrok.io';
 const String SOCKET_IO_PATH = '/nodesomboonqms/socket.io';
-// const String SOCKET_IO_PATH = '/nodesomboonqms/socket.io';
 
 const String LONGDO_MAP_KEY = 'ed50eae671bfb054d5d4ef5126ebfbfa';
+
+String connectionStatus = "Disconnected";
+String PCSC_INITIAL = "PCSC_INITIAL";
+String PCSC_CLOSE = "PCSC_CLOSE";
+
+String DEVICE_WAITING = "DEVICE_WAITING";
+String DEVICE_CONNECTED = "DEVICE_CONNECTED";
+String DEVICE_ERROR = "DEVICE_ERROR";
+String DEVICE_DISCONNECTED = "DEVICE_DISCONNECTED";
+
+String CARD_INSERTED = "CARD_INSERTED";
+String CARD_REMOVED = "CARD_REMOVED";
+
+String READING_INIT = "READING_INIT";
+String READING_START = "READING_START";
+String READING_PROGRESS = "READING_PROGRESS";
+String READING_COMPLETE = "READING_COMPLETE";
+String READING_FAIL = "READING_FAIL";
+String REGISTER = "queue:register";
+String CALL = "queue:call";
+String HOLD = "queue:hold";
+String FINISH = "queue:finish";
+String START = "queue:start";
+String TRANSFER = "queue:transfer";
+
+String SETTING_DISPLAY = "setting:display";
+String SETTING_COUNTER = "setting:counter";
+String SETTING_BRANCH_SERVICE = "setting:branch-service";
+String SETTING_SERVICE = "setting:service";
+String SETTING_KIOSK = "setting:kiosk";
+String CHECK_FOR_UPDATE = "check-for-update";
+
+String DISPLAY_PLAYING = "display:playing";
+String DISPLAY_ENDED = "display:ended";
+String DISPLAY_UPDATE_STATUS = "display:update-status";

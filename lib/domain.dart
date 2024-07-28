@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:somboonqms/branchlist.dart';
+import 'package:somboonqms/connect/setthing.dart';
 import 'package:somboonqms/load.dart';
 import 'package:somboonqms/url_api.dart';
 
 class ApplicationDomainScreen extends StatefulWidget {
-  const ApplicationDomainScreen({Key? key}) : super(key: key);
+  const ApplicationDomainScreen({super.key});
+  // const ApplicationDomainScreen({Key? key}) : super(key: key);
 
   @override
   State<ApplicationDomainScreen> createState() =>
@@ -58,17 +60,17 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
       body: Stack(
         children: [
           Positioned(
-            top: 150,
+            top: 20,
             left: 0,
-            right: 30,
+            right: 0,
             child: Image.asset(
               'assets/logo/logo.png',
-              fit: BoxFit.scaleDown,
+              fit: BoxFit.none,
             ),
           ),
           ListView(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).size.height * 0.4,
+              top: MediaQuery.of(context).size.height * 0.5,
             ),
             children: [
               Padding(
@@ -104,10 +106,10 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
                             _submitClearText();
                           },
                           style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(
+                            backgroundColor: WidgetStateProperty.all<Color>(
                                 const Color.fromARGB(255, 255, 255, 255)),
-                            shape: MaterialStateProperty.all<
-                                RoundedRectangleBorder>(
+                            shape:
+                                WidgetStateProperty.all<RoundedRectangleBorder>(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                                 side: const BorderSide(color: Colors.white),
@@ -146,6 +148,7 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
 
                               if (result == true) {
                                 Navigator.push(
+                                  // ignore: use_build_context_synchronously
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
@@ -176,10 +179,10 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
                             }
                           },
                           style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(
+                            backgroundColor: WidgetStateProperty.all<Color>(
                                 const Color.fromRGBO(9, 159, 175, 1.0)),
-                            shape: MaterialStateProperty.all<
-                                RoundedRectangleBorder>(
+                            shape:
+                                WidgetStateProperty.all<RoundedRectangleBorder>(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                                 side: const BorderSide(color: Colors.white),
@@ -201,29 +204,45 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
                       ],
                     ),
                     const SizedBox(height: 30),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.9,
-                      child: FutureBuilder<Box>(
-                        future: Hive.openBox('DomainUrl'),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            var box = snapshot.data;
-                            if (box!.containsKey('Domain')) {
-                              var domain = box.get('Domain');
-                              return Text(
-                                'Domain: $domain',
-                                textAlign: TextAlign.right,
-                                style: TextStyle(color: Colors.white),
-                              );
-                            } else {
-                              return SizedBox.shrink();
-                            }
-                          }
+                    // SizedBox(
+                    //   width: MediaQuery.of(context).size.width * 0.9,
+                    //   child: FutureBuilder<Box>(
+                    //     future: Hive.openBox('DomainUrl'),
+                    //     builder: (context, snapshot) {
+                    //       if (snapshot.connectionState ==
+                    //           ConnectionState.waiting) {
+                    //         return const CircularProgressIndicator();
+                    //       } else if (snapshot.hasError) {
+                    //         return Text('Error: ${snapshot.error}');
+                    //       } else {
+                    //         var box = snapshot.data;
+                    //         if (box!.containsKey('Domain')) {
+                    //           var domain = box.get('Domain');
+                    //           return Text(
+                    //             'Domain: $domain',
+                    //             textAlign: TextAlign.right,
+                    //             style: const TextStyle(color: Colors.white),
+                    //           );
+                    //         } else {
+                    //           return const SizedBox.shrink();
+                    //         }
+                    //       }
+                    //     },
+                    //   ),
+                    // ),
+                    Positioned(
+                      bottom: 20,
+                      right: 50,
+                      child: IconButton(
+                        icon:
+                            Icon(Icons.settings, color: Colors.white, size: 30),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SettingScreen(),
+                            ),
+                          );
                         },
                       ),
                     ),
