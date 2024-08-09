@@ -91,6 +91,7 @@ class ClassTicket {
       final queryParameters = {
         'branchid': branchid,
       };
+
       final uri = Uri.parse(ticketKioskDetailUrl)
           .replace(queryParameters: queryParameters);
       final response = await http.get(
@@ -99,9 +100,9 @@ class ClassTicket {
           HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
         },
       );
-
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.body);
+
         if (jsonData.containsKey('data') && jsonData['data'] is List) {
           List<Map<String, dynamic>> ticketKioskDetailList =
               (jsonData['data'] as List)
@@ -115,9 +116,148 @@ class ClassTicket {
         print('Failed to load service. Status code: ${response.statusCode}');
         onTicketKioskDetailLoaded([]);
       }
+
+      // if (response.statusCode == 200) {
+      //   Map<String, dynamic> jsonData = jsonDecode(response.body);
+      //   if (jsonData.containsKey('data') &&
+      //       jsonData['data'] is Map<String, dynamic>) {
+      //     Map<String, dynamic> innerData = jsonData['data'];
+
+      //     // ตรวจสอบ innerMostData
+      //     if (innerData.containsKey('data') &&
+      //         innerData['data'] is Map<String, dynamic>) {
+      //       Map<String, dynamic> innerMostData = innerData['data'];
+
+      //       // ตรวจสอบ ticketKioskDetails
+      //       if (innerMostData.containsKey('ticketKioskDetails') &&
+      //           innerMostData['ticketKioskDetails'] is List) {
+      //         List<Map<String, dynamic>> ticketKioskDetailList =
+      //             (innerMostData['ticketKioskDetails'] as List)
+      //                 .map((item) => item as Map<String, dynamic>)
+      //                 .toList();
+      //         onTicketKioskDetailLoaded(ticketKioskDetailList);
+      //       } else {
+      //         onTicketKioskDetailLoaded([]);
+      //       }
+      //     } else {
+      //       onTicketKioskDetailLoaded([]);
+      //     }
+      //   } else {
+      //     onTicketKioskDetailLoaded([]);
+      //   }
+      // } else {
+      //   print('Failed to load service. Status code: ${response.statusCode}');
+      //   onTicketKioskDetailLoaded([]);
+      // }
     } catch (e) {
       print('Error occurred: $e');
       onTicketKioskDetailLoaded([]);
+    }
+  }
+
+  static Future<void> QueueFirstticketkioskdetail({
+    required BuildContext context,
+    required String branchid,
+    required Function(List<Map<String, dynamic>>) onqueueFirstKioskDetailLoaded,
+  }) async {
+    try {
+      final queryParameters = {
+        'branchid': branchid,
+      };
+      final uri = Uri.parse(queuefirstticketKioskDetailUrl)
+          .replace(queryParameters: queryParameters);
+      final response = await http.get(
+        uri,
+        headers: <String, String>{
+          HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
+        },
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = jsonDecode(response.body);
+        if (jsonData.containsKey('data') && jsonData['data'] is List) {
+          List<Map<String, dynamic>> queueFirstKioskDetail =
+              (jsonData['data'] as List)
+                  .map((item) => item as Map<String, dynamic>)
+                  .toList();
+          onqueueFirstKioskDetailLoaded(queueFirstKioskDetail);
+        } else {
+          onqueueFirstKioskDetailLoaded([]);
+        }
+      } else {
+        print('Failed to load service. Status code: ${response.statusCode}');
+        onqueueFirstKioskDetailLoaded([]);
+      }
+      // if (jsonData.containsKey('data') &&
+      //     jsonData['data'] is Map<String, dynamic>) {
+      //   Map<String, dynamic> innerData = jsonData['data'];
+
+      //   // ตรวจสอบ innerMostData
+      //   if (innerData.containsKey('data') &&
+      //       innerData['data'] is Map<String, dynamic>) {
+      //     Map<String, dynamic> innerMostData = innerData['data'];
+
+      //     if (innerMostData.containsKey('queueFirst') &&
+      //         innerMostData['queueFirst'] is List) {
+      //       List<Map<String, dynamic>> queueFirstKioskDetail =
+      //           (innerMostData['queueFirst'] as List)
+      //               .map((item) => item as Map<String, dynamic>)
+      //               .toList();
+      //       onqueueFirstKioskDetailLoaded(queueFirstKioskDetail);
+      //     } else {
+      //       onqueueFirstKioskDetailLoaded([]);
+      //     }
+      //   } else {
+      //     onqueueFirstKioskDetailLoaded([]);
+      //   }
+      // } else {
+      //   onqueueFirstKioskDetailLoaded([]);
+      // }
+      // } else {
+      //   print('Failed to load service. Status code: ${response.statusCode}');
+      //   onqueueFirstKioskDetailLoaded([]);
+      // }
+    } catch (e) {
+      print('Error occurred: $e');
+      onqueueFirstKioskDetailLoaded([]);
+    }
+  }
+
+  static Future<void> QueueCountFirstticketkioskdetail({
+    required BuildContext context,
+    required String branchid,
+    required Function(List<Map<String, dynamic>>)
+        onqueuecountFirstKioskDetailLoaded,
+  }) async {
+    try {
+      final queryParameters = {
+        'branchid': branchid,
+      };
+      final uri = Uri.parse(queueCountfirstticketKioskDetailUrl)
+          .replace(queryParameters: queryParameters);
+      final response = await http.get(
+        uri,
+        headers: <String, String>{
+          HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8',
+        },
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonData = jsonDecode(response.body);
+        if (jsonData.containsKey('data') && jsonData['data'] is List) {
+          List<Map<String, dynamic>> queuecountFirstKioskDetail =
+              (jsonData['data'] as List)
+                  .map((item) => item as Map<String, dynamic>)
+                  .toList();
+          onqueuecountFirstKioskDetailLoaded(queuecountFirstKioskDetail);
+        } else {
+          onqueuecountFirstKioskDetailLoaded([]);
+        }
+      } else {
+        print('Failed to load service. Status code: ${response.statusCode}');
+        onqueuecountFirstKioskDetailLoaded([]);
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      onqueuecountFirstKioskDetailLoaded([]);
     }
   }
 }

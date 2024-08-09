@@ -21,19 +21,19 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
   int _selectedIndex = 0;
   late List<Map<String, dynamic>> TicketKioskDetail = [];
   late List<Map<String, dynamic>> SearchQueue = [];
-
+  late List<Map<String, dynamic>> SearchQueueC = [];
   bool isLoading = true;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    // เรียกดูรายละเอียดของจุดบัตรคิว
     fetchTicketKioskDetail(widget.Branch['branch_id']);
-    // รันรายการคิวตลอด
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      //   fetchSearchQueueC(widget.Branch['branch_id']);
       fetchSearchQueue(widget.Branch['branch_id']);
     });
+    // fetchSearchQueue(widget.Branch['branch_id']);
   }
 
   Future<void> fetchSearchQueue(String branchid) async {
@@ -44,6 +44,21 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
         if (mounted) {
           setState(() {
             SearchQueue = loadedSearchQueue;
+            isLoading = false;
+          });
+        }
+      },
+    );
+  }
+
+  Future<void> fetchSearchQueueC(String branchid) async {
+    await ClassQueue.searchqueue(
+      context: context,
+      branchid: branchid,
+      onSearchQueueLoaded: (loadedSearchQueue) {
+        if (mounted) {
+          setState(() {
+            SearchQueueC = loadedSearchQueue;
             isLoading = false;
           });
         }
@@ -74,7 +89,6 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -87,7 +101,7 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
               'assets/logo/logo.png',
               height: screenHeight * 0.04,
             ),
-            const Spacer(), // จัดให้โลโก้อยู่ชิดซ้าย
+            const Spacer(),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -96,17 +110,12 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
                   style: TextStyle(
                       color: Colors.white, fontSize: screenHeight * 0.03),
                 ),
-                // Text(
-                //   '${widget.Kiosk['t_kiosk_label']}',
-                //   style: TextStyle(
-                //       color: Colors.white, fontSize: screenHeight * 0.05),
-                // ),
               ],
             ),
           ],
         ),
         iconTheme: const IconThemeData(
-          color: Colors.white, // ตั้งค่าสีไอคอนย้อนกลับเป็นสีขาว
+          color: Colors.white,
         ),
         centerTitle: false,
       ),
@@ -142,17 +151,11 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
                         TicketKioskDetail: TicketKioskDetail,
                         SearchQueue: SearchQueue),
                     TabsWaitingScreen(
-                      Branch: widget.Branch,
-                      SearchQueue: SearchQueue,
-                    ),
+                        SearchQueue: SearchQueue, Branch: widget.Branch),
                     TabsHoldScreen(
-                      Branch: widget.Branch,
-                      SearchQueue: SearchQueue,
-                    ),
+                        SearchQueue: SearchQueue, Branch: widget.Branch),
                     TabsAllScreen(
-                      Branch: widget.Branch,
-                      SearchQueue: SearchQueue,
-                    ),
+                        SearchQueue: SearchQueue, Branch: widget.Branch),
                   ],
                 ),
               ),
@@ -166,7 +169,7 @@ class _TicketKioskDetailScreenState extends State<TicketKioskDetailScreen> {
   Widget _buildTab(String text, int index) {
     // ดึงขนาดหน้าจอ
     double screenWidth = MediaQuery.of(context).size.width;
-    double fontSize = screenWidth * 0.045;
+    double fontSize = screenWidth * 0.030;
 
     return Tab(
       child: Text(

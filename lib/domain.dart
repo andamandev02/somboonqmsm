@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:somboonqms/branchlist.dart';
 import 'package:somboonqms/connect/setthing.dart';
 import 'package:somboonqms/load.dart';
+import 'package:somboonqms/printing.dart';
 import 'package:somboonqms/url_api.dart';
 
 class ApplicationDomainScreen extends StatefulWidget {
@@ -81,20 +82,24 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
                   children: [
                     const Text(
                       "Application Domain",
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      style: TextStyle(color: Colors.white, fontSize: 30),
                     ),
                     const SizedBox(height: 20),
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.9,
                       child: TextField(
                         controller: _textDomainController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                                15.0), // ปรับค่าที่นี่เพื่อให้ขอบโค้งตามต้องการ
+                          ),
                           contentPadding: EdgeInsets.symmetric(
-                              vertical: 15.0, horizontal: 20.0),
+                              vertical: 30.0, horizontal: 30.0),
                           filled: true,
                           fillColor: Colors.white,
                         ),
+                        style: TextStyle(fontSize: 25),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -105,28 +110,29 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
                           onPressed: () {
                             _submitClearText();
                           },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all<Color>(
-                                const Color.fromARGB(255, 255, 255, 255)),
-                            shape:
-                                WidgetStateProperty.all<RoundedRectangleBorder>(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                side: const BorderSide(color: Colors.white),
-                              ),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0, vertical: 16.0),
+                            backgroundColor:
+                                const Color.fromARGB(255, 255, 255, 255),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              side: const BorderSide(color: Colors.white),
                             ),
+                            textStyle: const TextStyle(fontSize: 20),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'CLEAR',
+                                'เลคียข้อความ',
                                 style: TextStyle(
                                     color: Color.fromRGBO(9, 159, 175, 1.0)),
                               ),
-                              SizedBox(width: 4.0),
+                              SizedBox(width: 8.0),
                               Icon(Icons.clear,
-                                  color: Color.fromRGBO(9, 159, 175, 1.0)),
+                                  color: Color.fromRGBO(9, 159, 175, 1.0),
+                                  size: 24.0),
                             ],
                           ),
                         ),
@@ -140,15 +146,13 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
                                     message:
                                         'กำลังตรวจสอบ Domain กรุณารอสักครู๋',
                                     onLoadComplete: _handleDomain,
-                                    delay: const Duration(
-                                        seconds: 3), // กำหนดเวลาหน่วงที่นี่
+                                    delay: const Duration(seconds: 3),
                                   ),
                                 ),
                               );
 
                               if (result == true) {
                                 Navigator.push(
-                                  // ignore: use_build_context_synchronously
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
@@ -165,8 +169,7 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
                                       child: Text(
                                         'กรุณาป้อน Domain\nเพื่อเข้าใช้งานระบบ',
                                         style: TextStyle(fontSize: 18),
-                                        textAlign: TextAlign
-                                            .center, // ข้อความจะอยู่ตรงกลาง
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   );
@@ -178,16 +181,16 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
                               });
                             }
                           },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all<Color>(
-                                const Color.fromRGBO(9, 159, 175, 1.0)),
-                            shape:
-                                WidgetStateProperty.all<RoundedRectangleBorder>(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0),
-                                side: const BorderSide(color: Colors.white),
-                              ),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24.0, vertical: 16.0),
+                            backgroundColor:
+                                const Color.fromRGBO(9, 159, 175, 1.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                              side: const BorderSide(color: Colors.white),
                             ),
+                            textStyle: const TextStyle(fontSize: 20),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
@@ -196,8 +199,9 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
                                 'ต่อไป',
                                 style: TextStyle(color: Colors.white),
                               ),
-                              SizedBox(width: 4.0),
-                              Icon(Icons.arrow_forward, color: Colors.white),
+                              SizedBox(width: 8.0),
+                              Icon(Icons.arrow_forward,
+                                  color: Colors.white, size: 24.0),
                             ],
                           ),
                         ),
@@ -246,6 +250,17 @@ class _ApplicationDomainScreenState extends State<ApplicationDomainScreen> {
                         },
                       ),
                     ),
+                    // Positioned(
+                    //   bottom: 20,
+                    //   right: 50,
+                    //   child: IconButton(
+                    //     icon:
+                    //         Icon(Icons.settings, color: Colors.white, size: 30),
+                    //     onPressed: () {
+                    //       showQRCodeDialog();
+                    //     },
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

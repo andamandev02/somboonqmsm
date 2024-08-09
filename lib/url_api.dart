@@ -38,6 +38,14 @@ String getApiBaseUrlTicketKioskList() {
   return '$apiBaseURL/api/v1/queue-mobile/ticket-kiosk-list';
 }
 
+String getApiBaseUrlQueueFirstTicketKioskList() {
+  return '$apiBaseURL/api/v1/queue-mobile/queue-first-ticket-kiosk-detail';
+}
+
+String getApiBaseUrlQueueCountFirstTicketKioskList() {
+  return '$apiBaseURL/api/v1/queue-mobile/queue-count-first-ticket-kiosk-detail';
+}
+
 // รายการจบคิว
 String getApiBaseUrlEndQueueList() {
   return '$apiBaseURL/api/v1/queue-mobile/reason-all';
@@ -89,6 +97,10 @@ String getApiBaseUrlRenderDisplay() {
 
 final String branchListUrl = getApiBaseUrlBranchList();
 final String ticketKioskListUrl = getApiBaseUrlTicketKioskList();
+final String queuefirstticketKioskDetailUrl =
+    getApiBaseUrlQueueFirstTicketKioskList();
+final String queueCountfirstticketKioskDetailUrl =
+    getApiBaseUrlQueueCountFirstTicketKioskList();
 final String endQueueReasonlistUrl = getApiBaseUrlEndQueueList();
 final String ticketKioskDetailUrl = getApiBaseUrlTicketKioskDetail();
 final String createQueueUrl = getApiBaseUrlCreateQueue();

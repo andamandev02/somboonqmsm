@@ -54,10 +54,10 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
     super.initState();
     // รันรายการ caller
     fetchReason(widget.Branch['branch_id']);
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async  {
-       await fetchCallerQueueAll(widget.Branch['branch_id']);
-       await fetchQueueFirstKioskDetail(widget.Branch['branch_id']);
-       await fetchQueueCountFirstKioskDetail(widget.Branch['branch_id']);
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      await fetchCallerQueueAll(widget.Branch['branch_id']);
+      await fetchQueueFirstKioskDetail(widget.Branch['branch_id']);
+      await fetchQueueCountFirstKioskDetail(widget.Branch['branch_id']);
     });
   }
 
@@ -139,7 +139,7 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    // _textPaxontroller.dispose();
+    _textPaxontroller.dispose();
     // ClassQueue.dispose();
     super.dispose();
   }
@@ -173,6 +173,7 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                   final TC = QueueCountFirstKioskDetail;
                   final T2 = QueueAll;
                   List<Widget> queueWidgets = [];
+
                   // ถ้า T2 ว่างเปล่า ให้แสดงเฉพาะ T1
                   if (T2 == null || T2.isEmpty) {
                     // final linkedQueue = queueAlll
@@ -510,20 +511,9 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                                     },
                                                   );
 
-                                                  // await fetchCallerQueueAll(
-                                                  //     widget.Branch[
-                                                  //         'branch_id']);
-                                                  //
-                                                  // await fetchQueueFirstKioskDetail(
-                                                  //     widget.Branch[
-                                                  //         'branch_id']);
-                                                  //
-                                                  // await fetchQueueCountFirstKioskDetail(
-                                                  //     widget.Branch[
-                                                  //         'branch_id']);
-
                                                   setState(() {
-                                                    _isButtonDisabled = false;
+                                                    _isButtonDisabled =
+                                                        false; // Re-enable the button
                                                   });
 
                                                   Timer(Duration(seconds: 2),
@@ -912,18 +902,6 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                                       },
                                                     );
 
-                                                    // await fetchCallerQueueAll(
-                                                    //     widget.Branch[
-                                                    //         'branch_id']);
-                                                    //
-                                                    // await fetchQueueFirstKioskDetail(
-                                                    //     widget.Branch[
-                                                    //         'branch_id']);
-                                                    //
-                                                    // await fetchQueueCountFirstKioskDetail(
-                                                    //     widget.Branch[
-                                                    //         'branch_id']);
-
                                                     setState(() {
                                                       _isButtonDisabled = false;
                                                     });
@@ -1238,18 +1216,6 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                                         StatusQueueNote: '',
                                                       );
 
-                                                      // await fetchCallerQueueAll(
-                                                      //     widget.Branch[
-                                                      //         'branch_id']);
-                                                      //
-                                                      // await fetchQueueFirstKioskDetail(
-                                                      //     widget.Branch[
-                                                      //         'branch_id']);
-                                                      //
-                                                      // await fetchQueueCountFirstKioskDetail(
-                                                      //     widget.Branch[
-                                                      //         'branch_id']);
-
                                                       setState(() {
                                                         _isButtonDisabled =
                                                             false; // Re-enable the button
@@ -1350,18 +1316,6 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                                             Reason[index]
                                                                 ['reason_id'],
                                                       );
-
-                                                      // await fetchCallerQueueAll(
-                                                      //     widget.Branch[
-                                                      //         'branch_id']);
-                                                      //
-                                                      // await fetchQueueFirstKioskDetail(
-                                                      //     widget.Branch[
-                                                      //         'branch_id']);
-                                                      //
-                                                      // await fetchQueueCountFirstKioskDetail(
-                                                      //     widget.Branch[
-                                                      //         'branch_id']);
 
                                                       setState(() {
                                                         _isButtonDisabled =
@@ -1481,20 +1435,10 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                     StatusQueue: ReasonNote,
                                     StatusQueueNote: Reason[index]['reason_id'],
                                   );
-
-                                  // await fetchCallerQueueAll(
-                                  //     widget.Branch['branch_id']);
-                                  //
-                                  // await fetchQueueFirstKioskDetail(
-                                  //     widget.Branch['branch_id']);
-                                  //
-                                  // await fetchQueueCountFirstKioskDetail(
-                                  //     widget.Branch['branch_id']);
-
-                                  await Future.delayed(
-                                      const Duration(seconds: 1));
-
-                                  Navigator.of(context).pop();
+                                  Timer(const Duration(seconds: 2), () {
+                                    Navigator.of(context).pop();
+                                    // Navigator.of(context).pop();
+                                  });
                                 },
                                 style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.black,
@@ -1536,20 +1480,10 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                     StatusQueue: ReasonNote,
                                     StatusQueueNote: Reason[index]['reason_id'],
                                   );
-
-                                  // await fetchCallerQueueAll(
-                                  //     widget.Branch['branch_id']);
-                                  //
-                                  // await fetchQueueFirstKioskDetail(
-                                  //     widget.Branch['branch_id']);
-                                  //
-                                  // await fetchQueueCountFirstKioskDetail(
-                                  //     widget.Branch['branch_id']);
-
-                                  await Future.delayed(
-                                      const Duration(seconds: 1));
-
-                                  Navigator.of(context).pop();
+                                  Timer(const Duration(seconds: 2), () {
+                                    Navigator.of(context).pop();
+                                    // Navigator.of(context).pop();
+                                  });
                                 },
                                 style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.black,
@@ -1640,12 +1574,24 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Center(
+                      child: Text(
+                        'จำนวนลูกค้า',
+                        style: TextStyle(
+                          fontSize: fontSize * 0.65,
+                          color: const Color.fromRGBO(9, 159, 175, 1.0),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                        height: paddingValue * 0.5), // ลดขนาดขนาดของ SizedBox
                     Row(
                       children: [
                         Text(
-                          "ระบุจำนวนลูกค้า",
+                          "ระบุ",
                           style: TextStyle(
-                            fontSize: fontSize * 0.8,
+                            fontSize: fontSize * 0.5,
                             color: const Color.fromRGBO(9, 159, 175, 1.0),
                           ),
                         ),
@@ -1692,7 +1638,7 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                               ),
                               style: TextStyle(
                                   color: const Color.fromRGBO(9, 159, 175, 1.0),
-                                  fontSize: fontSize * 1.0), // ลดขนาด fontSize
+                                  fontSize: fontSize * 0.8), // ลดขนาด fontSize
                               inputFormatters: [
                                 LengthLimitingTextInputFormatter(3)
                               ],
@@ -1703,7 +1649,7 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                         Text(
                           "คน",
                           style: TextStyle(
-                            fontSize: fontSize * 0.8,
+                            fontSize: fontSize * 0.5,
                             color: const Color.fromRGBO(9, 159, 175, 1.0),
                           ),
                         ),
@@ -1736,7 +1682,7 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                             buttonColor =
                                 const Color.fromRGBO(9, 159, 175, 1.0);
                           } else {
-                            buttonText = 'ลบ';
+                            buttonText = '←';
                             buttonColor =
                                 const Color.fromRGBO(9, 159, 175, 1.0);
                           }
@@ -1768,8 +1714,8 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                     buttonText,
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: buttonText == 'ลบ'
-                                          ? fontSize * 0.8 // ลดขนาด fontSize
+                                      fontSize: buttonText == '←'
+                                          ? fontSize * 0.6 // ลดขนาด fontSize
                                           : fontSize,
                                     ),
                                   ),
@@ -1798,11 +1744,11 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                     8.0), // ลดขนาด borderRadius
                               ),
                             ),
-                            child: Text(
+                            child: const Text(
                               'ยกเลิก',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: fontSize * 0.8, // ลดขนาด fontSize
+                                fontSize: 20.0, // ลดขนาด fontSize
                               ),
                             ),
                           ),
@@ -1856,16 +1802,6 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                   Branch: widget.Branch,
                                   Kiosk: widget.Kiosk,
                                 );
-
-                                // await fetchCallerQueueAll(
-                                //     widget.Branch['branch_id']);
-                                //
-                                // await fetchQueueFirstKioskDetail(
-                                //     widget.Branch['branch_id']);
-                                //
-                                // await fetchQueueCountFirstKioskDetail(
-                                //     widget.Branch['branch_id']);
-
                                 _textPaxController.text = '';
                                 _isLoading = true;
                                 _isLoading = false;
@@ -1881,11 +1817,11 @@ class _TabsCallingScreenState extends State<TabsCallingScreen> {
                                     8.0), // ลดขนาด borderRadius
                               ),
                             ),
-                            child: Text(
+                            child: const Text(
                               'บันทึกคิว',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: fontSize * 0.8, // ลดขนาด fontSize
+                                fontSize: 20.0, // ลดขนาด fontSize
                               ),
                             ),
                           ),

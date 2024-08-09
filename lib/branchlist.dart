@@ -90,7 +90,7 @@ class _BranchListScreenState extends State<BranchListScreen> {
                           Branch[index]['branch_name'],
                           style: const TextStyle(
                             color: Color.fromRGBO(9, 159, 175, 1.0),
-                            fontSize: 20.0,
+                            fontSize: 30.0,
                           ),
                         ),
                         const Icon(

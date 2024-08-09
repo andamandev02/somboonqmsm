@@ -7,7 +7,7 @@ import 'package:somboonqms/printing.dart';
 import 'package:somboonqms/url_api.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
-class ClassQueue {
+class ClassQueueTest {
   IO.Socket? socket;
 
   static final StreamController<List<Map<String, dynamic>>>
@@ -65,9 +65,6 @@ class ClassQueue {
       socket = null;
     }
   }
-
-  // bool isSocketProcessing = false;
-  // Completer<void>? socketCompleter;
 
   Future<void> createQueue({
     required BuildContext context,
@@ -134,17 +131,10 @@ class ClassQueue {
   Future<void> CallQueue(
       {required BuildContext context,
       required List<Map<String, dynamic>> SearchQueue}) async {
-    // if (isSocketProcessing) {
-    //   return;
-    // }
-
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
     try {
-      // isSocketProcessing = true;
-      // socketCompleter = Completer<void>();
-
       await initializeWebSocket();
 
       var body = jsonEncode({
@@ -162,11 +152,8 @@ class ClassQueue {
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.body);
         Map<String, dynamic> data = jsonData['data'];
-        Map<String, dynamic> innerData = data['data'];
-        Map<String, dynamic> queueData = innerData['queue'];
-        Map<String, dynamic> callerData = innerData['caller'];
-        String queueNo = queueData['queue_no'].toString();
-        String callerid = callerData['caller_id'].toString();
+        Map<String, dynamic> queue = data['queue'];
+        String queueNo = queue['queue_no'];
 
         showDialog(
           context: context,
@@ -214,35 +201,12 @@ class ClassQueue {
           },
         );
 
-        // socket?.on('display:playing', (data) {
-        //   print('Received response: $data');
-        //   socketCompleter?.complete();
-        //   isSocketProcessing = false;
-        //   Navigator.of(context).pop();
-        //   DefaultTabController.of(context).animateTo(0);
-        // });
-
-        if (socket == null || !socket!.connected) {
-          await initializeWebSocket();
-          socket?.emit(
-              CALL, <String, dynamic>{'queue': 'call', 'data': callerid});
-          // socketCompleter?.complete();
-        } else {
-          socket?.emit(
-              CALL, <String, dynamic>{'queue': 'call', 'data': callerid});
-          // socketCompleter?.complete();
-        }
-
-        // socketCompleter?.future.catchError((e) {
-        //   print('Error while waiting for response: $e');
-        //   isSocketProcessing = false;
-        //   Navigator.of(context).pop();
-        // });
+        socket
+            ?.emit(CALL, <String, dynamic>{'queue': 'call', 'data': jsonData});
 
         Timer(Duration(seconds: 2), () {
           Navigator.of(context).pop();
           DefaultTabController.of(context).animateTo(0);
-          // isSocketProcessing = false;
         });
       } else if (response.statusCode == 422) {
         showDialog(
@@ -291,7 +255,6 @@ class ClassQueue {
           },
         );
         Timer(Duration(seconds: 2), () {
-          // isSocketProcessing = false;
           Navigator.of(context).pop();
         });
       } else {
@@ -315,8 +278,6 @@ class ClassQueue {
         );
       }
     } catch (e) {
-      // isSocketProcessing = false;
-      // socketCompleter?.completeError(e);
       print('Error: $e');
     }
   }
@@ -326,17 +287,10 @@ class ClassQueue {
       required List<Map<String, dynamic>> SearchQueue,
       required String StatusQueue,
       required String StatusQueueNote}) async {
-    // if (isSocketProcessing) {
-    //   return;
-    // }
-
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
     try {
-      // isSocketProcessing = true;
-      // socketCompleter = Completer<void>();
-
       await initializeWebSocket();
 
       var body = jsonEncode({
@@ -355,9 +309,6 @@ class ClassQueue {
 
       if (response.statusCode == 200) {
         Map<String, dynamic> jsonData = jsonDecode(response.body);
-        Map<String, dynamic> data = jsonData['data'];
-        Map<String, dynamic> innerData = data['data'];
-        Map<String, dynamic> queueData = innerData['queue'];
 
         var ToSocket = '';
         String ToMsg = '';
@@ -376,36 +327,6 @@ class ClassQueue {
         } else if (StatusQueue == 'Recalling') {
           ToSocket = CALL;
           ToMsg = "กำลังเรียกคิวซ้ำ";
-        }
-
-        if (innerData.containsKey('caller') && innerData['caller'] is Map) {
-          Map<String, dynamic> callerData = innerData['caller'];
-          String callerid = callerData['caller_id']?.toString() ?? '';
-
-          //   socket?.on('display:playing', (data) {
-          //     print('Received response: $data');
-          //     socketCompleter?.complete();
-          //     isSocketProcessing = false;
-          //     DefaultTabController.of(context).animateTo(0);
-          //     Navigator.of(context).pop();
-          //   });
-
-          if (socket == null || !socket!.connected) {
-            await initializeWebSocket();
-            socket?.emit(ToSocket,
-                <String, dynamic>{'queue': ToSocket, 'data': callerid});
-            // socketCompleter?.complete();
-          } else {
-            socket?.emit(ToSocket,
-                <String, dynamic>{'queue': ToSocket, 'data': callerid});
-            // socketCompleter?.complete();
-          }
-
-          // socketCompleter?.future.catchError((e) {
-          //   print('Error while waiting for response: $e');
-          //   Navigator.of(context).pop();
-          //   isSocketProcessing = false;
-          // });
         }
 
         showDialog(
@@ -455,10 +376,12 @@ class ClassQueue {
         );
 
         Timer(Duration(seconds: 2), () {
-          // isSocketProcessing = false;
           Navigator.of(context).pop();
           DefaultTabController.of(context).animateTo(0);
         });
+
+        socket?.emit(ToSocket,
+            <String, dynamic>{'queue': ToSocket, 'data': jsonData['data']});
       } else if (response.statusCode == 422) {
         showDialog(
           context: context,
@@ -506,7 +429,6 @@ class ClassQueue {
           },
         );
         Timer(Duration(seconds: 2), () {
-          // isSocketProcessing = false;
           Navigator.of(context, rootNavigator: true).pop();
         });
       } else {
@@ -529,13 +451,10 @@ class ClassQueue {
           },
         );
         Timer(Duration(seconds: 2), () {
-          // isSocketProcessing = false;
           Navigator.of(context, rootNavigator: true).pop();
         });
       }
     } catch (e) {
-      // isSocketProcessing = false;
-      // socketCompleter?.completeError(e);
       print('Error: $e');
     }
   }
@@ -590,16 +509,9 @@ class ClassQueue {
     required Map<String, dynamic> Kiosk,
     required Function(List<Map<String, dynamic>>) onCallerLoaded,
   }) async {
-    // if (isSocketProcessing) {
-    //   return;
-    // }
-
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     try {
-      // isSocketProcessing = true;
-      // socketCompleter = Completer<void>();
-
       await initializeWebSocket();
 
       var body = jsonEncode({
@@ -621,9 +533,7 @@ class ClassQueue {
         Map<String, dynamic> data = jsonData['data'];
         Map<String, dynamic> innerData = data['data'];
         Map<String, dynamic> queueData = innerData['queue'];
-        Map<String, dynamic> callerData = innerData['caller'];
         String queueNo = queueData['queue_no'].toString();
-        String callerid = callerData['caller_id'].toString();
 
         showDialog(
           context: context,
@@ -671,27 +581,8 @@ class ClassQueue {
           },
         );
 
-        // socket?.on('display:playing', (data) {
-        // Navigator.of(context).pop();
-        // DefaultTabController.of(context).animateTo(0);
-        // });
-
-        if (socket == null || !socket!.connected) {
-          await initializeWebSocket();
-          socket?.emit(
-              CALL, <String, dynamic>{'queue': 'call', 'data': callerid});
-          // socketCompleter?.complete();
-        } else {
-          socket?.emit(
-              CALL, <String, dynamic>{'queue': 'call', 'data': callerid});
-          // socketCompleter?.complete();
-        }
-
-        // socketCompleter?.future.catchError((e) {
-        // print('Error while waiting for response: $e');
-        // Navigator.of(context).pop();
-        // isSocketProcessing = false;
-        // });
+        socket
+            ?.emit(CALL, <String, dynamic>{'queue': 'call', 'data': jsonData});
 
         var bodyrender = jsonEncode({
           'RenderDisplay': response.body,
@@ -830,8 +721,6 @@ class ClassQueue {
         );
       }
     } catch (e) {
-      // isSocketProcessing = false;
-      // socketCompleter?.completeError(e);
       print('เกิดข้อผิดพลาด: $e');
     }
   }

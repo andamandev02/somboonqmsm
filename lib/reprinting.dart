@@ -18,12 +18,7 @@ Future<void> showQRCodeDialog(
   var printerBox = await Hive.openBox('PrinterDevice');
   String? printerAddressString = printerBox.get('PrinterDevice');
   print(printerAddressString);
-  // await _PrintTicket(printerAddressString!, _qrData);
-  if (printerAddressString != null) {
-    await _PrintTicket(printerAddressString, _qrData);
-  } else {
-    print('Printer address is null');
-  }
+  await _PrintTicket(printerAddressString!, _qrData);
   await printerBox.close();
 }
 
@@ -39,85 +34,93 @@ Future<void> _PrintTicket(
   try {
     final NyxPrinter _nyxPrinter = NyxPrinter();
     if (printerAddressString == null) return;
-    DateTime queueTime = DateTime.parse(_qrData['data']['queue']['queue_time']);
+
+    String queueTimeString = _qrData['queue_time'];
+    DateTime now = DateTime.now();
+    List<String> timeParts = queueTimeString.split(':');
+    int hour = int.parse(timeParts[0]);
+    int minute = int.parse(timeParts[1]);
+    int second = int.parse(timeParts[2]);
+
+    DateTime queueTime =
+        DateTime(now.year, now.month, now.day, hour, minute, second);
     String formattedQueueTime =
         "${queueTime.day}/${queueTime.month}/${queueTime.year} ${queueTime.hour}:${queueTime.minute}";
-    final ByteData data = await rootBundle.load("assets/logo/images-v.jpg");
-    final Uint8List bytes = data.buffer.asUint8List();
-
-    final Uint8List resizedBytes = await resizeImage(bytes, 450, 150);
     // final image = await rootBundle.load("assets/logo/images-v.jpg");
     // await _nyxPrinter.printImage(image.buffer.asUint8List());
-    // await _nyxPrinter.printText("Tomato\n 9\$",
-    //   textFormat: NyxTextFormat(topPadding : -5),
-    // );
-    // await _nyxPrinter.printText("Tomato\n 9\$",
-    //   textFormat: NyxTextFormat(topPadding : -10),
-    // );
+    final ByteData data = await rootBundle.load("assets/logo/images-v.jpg");
+    final Uint8List bytes = data.buffer.asUint8List();
+    final Uint8List resizedBytes = await resizeImage(bytes, 450, 150);
     await _nyxPrinter.printImage(resizedBytes);
     await _nyxPrinter.printText(
-        "${_qrData['data']['branch']['branch_name']}  ${formattedQueueTime}  ",
+        "${_qrData['branch_name']} ${formattedQueueTime}",
         textFormat: NyxTextFormat(
           textSize: 28,
-          align: NyxAlign.center,
           topPadding: -5,
+          align: NyxAlign.center,
           font: NyxFont.defaultBold,
           style: NyxFontStyle.bold,
         ));
     await _nyxPrinter.printText(
-      "${_qrData['data']['queue']['queue_no']}",
+      "${_qrData['queue_no']}",
       textFormat: NyxTextFormat(
-        textSize: 50,
         topPadding: -5,
-        font: NyxFont.defaultFont,
+        textSize: 50,
+        font: NyxFont.defaultBold,
         align: NyxAlign.center,
         style: NyxFontStyle.bold,
       ),
     );
     await _nyxPrinter.printText(
-      "${_qrData['data']['queue']['number_pax']} PAX",
+      "${_qrData['number_pax']} PAX",
       textFormat: NyxTextFormat(
         textSize: 28,
         style: NyxFontStyle.bold,
-        font: NyxFont.defaultFont,
-        topPadding: -8,
+        topPadding: -5,
+        font: NyxFont.defaultBold,
         align: NyxAlign.center,
       ),
     );
+    // await _nyxPrinter.printText(
+    //   formattedQueueTime,
+    //   textFormat: NyxTextFormat(
+    //     font: NyxFont.defaultBold,
+    //     align: NyxAlign.center,
+    //   ),
+    // );
     await _nyxPrinter.printText(
-      "If your number has passed,Please get a new ticket",
+      "If your number has passed,Please get a new ticket.",
       textFormat: NyxTextFormat(
         font: NyxFont.defaultFont,
-        topPadding: -5,
         align: NyxAlign.center,
-        // style: NyxFontStyle.bold,
+        topPadding: -5,
       ),
     );
     await _nyxPrinter.printText(
       "如果过号,请从新取牌",
       textFormat: NyxTextFormat(
         font: NyxFont.monospace,
-        topPadding: -5,
         align: NyxAlign.center,
+        topPadding: -5,
       ),
     );
     String _qrDataUrl =
-        "https://somboonqms.andamandev.com/en/app/kiosk/scan-queue?id=${_qrData['data']['queue']['queue_id']}";
+        "https://somboonqms.andamandev.com/en/app/kiosk/scan-queue?id=${_qrData['queue_id']}";
     await _nyxPrinter.printQrCode(_qrDataUrl, width: 185, height: 185);
     await _nyxPrinter.printText(
       "Everyone must be here to be seated.",
       textFormat: NyxTextFormat(
         font: NyxFont.defaultBold,
-        topPadding: -5,
         align: NyxAlign.center,
+        topPadding: -5,
         style: NyxFontStyle.bold,
       ),
     );
     await _nyxPrinter.printText(
       "所有人都需要到场才能入座",
       textFormat: NyxTextFormat(
-        topPadding: -5,
         font: NyxFont.monospace,
+        topPadding: -5,
         align: NyxAlign.center,
       ),
     );
@@ -129,16 +132,15 @@ Future<void> _PrintTicket(
     //     style: NyxFontStyle.bold,
     //   ),
     // );
-    await _nyxPrinter.printText(
-      "Waiting ${_qrData['data']['count']} Queues",
-      textFormat: NyxTextFormat(
-        topPadding: -5,
-        font: NyxFont.monospace,
-        align: NyxAlign.center,
-        // textSize: 30,
-        style: NyxFontStyle.bold,
-      ),
-    );
+    // await _nyxPrinter.printText(
+    //   "Wait ${_qrData['data']['result']} Queue",
+    //   textFormat: NyxTextFormat(
+    //     font: NyxFont.monospace,
+    //     align: NyxAlign.center,
+    //     textSize: 32,
+    //     style: NyxFontStyle.bold,
+    //   ),
+    // );
     await _nyxPrinter.printText("");
     await _nyxPrinter.printText("");
     await _nyxPrinter.printText("");

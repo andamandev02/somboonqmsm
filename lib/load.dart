@@ -105,7 +105,7 @@ class _BouncingDotsLoaderState extends State<BouncingDotsLoader>
         const SizedBox(height: 16.0),
         const Text(
           'กำลังตรวจสอบข้อมูล กรุณาโปรดรอสักครู่',
-          style: TextStyle(fontSize: 16.0),
+          style: TextStyle(fontSize: 30.0),
         ),
       ],
     );

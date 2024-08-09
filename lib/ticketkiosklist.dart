@@ -161,7 +161,7 @@ class _TicketKioskListScreenState extends State<TicketKioskListScreen> {
                                       style: TextStyle(
                                           color: const Color.fromRGBO(
                                               9, 159, 175, 1.0),
-                                          fontSize: screenHeight * 0.020),
+                                          fontSize: screenHeight * 0.03),
                                     ),
                                     const Icon(
                                       Icons.arrow_forward,

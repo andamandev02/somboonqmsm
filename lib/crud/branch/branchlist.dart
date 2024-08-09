@@ -27,7 +27,6 @@ class ClassBranch {
             .toList();
         onBranchListLoaded(branchList);
       } else {
-        print('Response body: ${response.body}');
         showDialog(
           context: context,
           builder: (BuildContext context) {

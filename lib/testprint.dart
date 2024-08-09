@@ -29,7 +29,7 @@ class TestPrint {
 
     // Resize the image
     img.Image? image = img.decodeImage(imageBytesFromAsset);
-    img.Image resizedImage = img.copyResize(image!, width: 500, height: 500);
+    img.Image resizedImage = img.copyResize(image!, width: 800, height: 213);
     Uint8List resizedImageBytes =
         Uint8List.fromList(img.encodeJpg(resizedImage));
 
@@ -42,9 +42,9 @@ class TestPrint {
       if (isConnected == true) {
         print("Bluetooth is connected");
 
-        bluetooth.printNewLine();
-        bluetooth.printCustom("HEADER", Size.boldMedium.val, Align.center.val);
-        bluetooth.printNewLine();
+        // bluetooth.printNewLine();
+        // bluetooth.printCustom("HEADER", Size.boldMedium.val, Align.center.val);
+        // bluetooth.printNewLine();
 
         // Print one image only
         // bluetooth.printImage(file.path); // Path of your image/logo
@@ -56,41 +56,39 @@ class TestPrint {
         // bluetooth.printImageBytes(imageBytesFromNetwork); // Image from Network
         // bluetooth.printNewLine();
 
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.medium.val);
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val,
-            format:
-                "%-15s %15s %n"); // 15 is number of characters from left or right
-        bluetooth.printNewLine();
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.boldMedium.val);
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.boldLarge.val);
-        bluetooth.printLeftRight("LEFT", "RIGHT", Size.extraLarge.val);
-        bluetooth.printNewLine();
-        bluetooth.print3Column("Col1", "Col2", "Col3", Size.bold.val);
-        bluetooth.print3Column("Col1", "Col2", "Col3", Size.bold.val,
-            format:
-                "%-10s %10s %10s %n"); // 10 is number of characters from left center and right
-        bluetooth.printNewLine();
-        bluetooth.print4Column("Col1", "Col2", "Col3", "Col4", Size.bold.val);
-        bluetooth.print4Column("Col1", "Col2", "Col3", "Col4", Size.bold.val,
-            format: "%-8s %7s %7s %7s %n");
-        bluetooth.printNewLine();
-        bluetooth.printCustom("čĆžŽšŠ-H-ščđ", Size.bold.val, Align.center.val,
-            charset: "windows-1250");
-        bluetooth.printLeftRight("Številka:", "18000001", Size.bold.val,
-            charset: "windows-1250");
-        bluetooth.printCustom("Body left", Size.bold.val, Align.left.val);
-        bluetooth.printCustom("Body right", Size.medium.val, Align.right.val);
-        bluetooth.printNewLine();
-        bluetooth.printCustom("Thank You", Size.bold.val, Align.center.val);
-        bluetooth.printNewLine();
-
-        // Debug print before printing image
-        print("Printing image from asset");
-        bluetooth.printImageBytes(resizedImageBytes); // Path of your image/logo
-
-        bluetooth.printNewLine();
-        bluetooth.printNewLine();
+        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.medium.val);
+        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val);
+        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.bold.val,
+        //     format:
+        //         "%-15s %15s %n"); // 15 is number of characters from left or right
+        // bluetooth.printNewLine();
+        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.boldMedium.val);
+        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.boldLarge.val);
+        // bluetooth.printLeftRight("LEFT", "RIGHT", Size.extraLarge.val);
+        // bluetooth.printNewLine();
+        // bluetooth.print3Column("Col1", "Col2", "Col3", Size.bold.val);
+        // bluetooth.print3Column("Col1", "Col2", "Col3", Size.bold.val,
+        //     format:
+        //         "%-10s %10s %10s %n"); // 10 is number of characters from left center and right
+        // bluetooth.printNewLine();
+        // bluetooth.print4Column("Col1", "Col2", "Col3", "Col4", Size.bold.val);
+        // bluetooth.print4Column("Col1", "Col2", "Col3", "Col4", Size.bold.val,
+        //     format: "%-8s %7s %7s %7s %n");
+        // bluetooth.printNewLine();
+        // bluetooth.printCustom("čĆžŽšŠ-H-ščđ", Size.bold.val, Align.center.val,
+        //     charset: "windows-1250");
+        // bluetooth.printLeftRight("Številka:", "18000001", Size.bold.val,
+        //     charset: "windows-1250");
+        // bluetooth.printCustom("Body left", Size.bold.val, Align.left.val);
+        // bluetooth.printCustom("Body right", Size.medium.val, Align.right.val);
+        // bluetooth.printNewLine();
+        // bluetooth.printCustom("Thank You", Size.bold.val, Align.center.val);
+        // bluetooth.printNewLine();
+        int width = 200;
+        int height = 200;
+        bluetooth.printImageBytes(resizedImageBytes, width, height);
+        // bluetooth.printNewLine();
+        // bluetooth.printNewLine();
 
         bluetooth
             .paperCut(); // Some printers not supported (sometime making image not centered)
